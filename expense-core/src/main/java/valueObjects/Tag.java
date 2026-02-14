@@ -1,4 +1,4 @@
-package model;
+package valueObjects;
 
 public class Tag {
 }

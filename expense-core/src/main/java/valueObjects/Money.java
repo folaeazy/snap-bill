@@ -1,4 +1,4 @@
-package money;
+package valueObjects;
 
 public class Money {
 }
