@@ -1,37 +1,80 @@
 package valueObjects;
 
 
+import java.util.Objects;
+
 /**
- * Fixed set of expense categories with display names.
- * Used for reporting, filtering, and AI classification.
+ * Immutable Value Object representing a transaction category.
+ *
+ * Examples: "Subscriptions", "Food & Drinks", "Transport", "Entertainment"
+ *
+ * Supports optional hierarchy via parent reference.
+ * If user-customizable categories with persistent identity become needed later,
+ * this can be promoted to an Entity.
  */
-public enum Category {
+public final class Category {
 
-    FOOD_AND_DRINK("Food & Drink"),
-    TRANSPORTATION("Transportation"),
-    SHOPPING("Shopping"),
-    UTILITIES("Utilities"),
-    ENTERTAINMENT("Entertainment"),
-    HEALTH("Health"),
-    TRAVEL("Travel"),
-    BUSINESS("Business"),
-    EDUCATION("Education"),
-    HOUSING("Housing"),
-    PERSONAL("Personal"),
-    OTHER("Other");
+    private final String name;
+    private final Category parent;      // null = top-level category
 
-    private final String displayName;
-
-    Category(String displayName) {
-        this.displayName = displayName;
+    private Category(String name, Category parent) {
+        this.name = normalizeName(Objects.requireNonNull(name, "Category name is required"));
+        this.parent = parent;
     }
 
-    public String getDisplayName() {
-        return displayName;
+    public static Category of(String name) {
+        return new Category(name, null);
     }
 
-    // Helper for grouping
-    public boolean isEssential() {
-        return this == FOOD_AND_DRINK || this == UTILITIES || this == HOUSING || this == HEALTH;
+    public static Category of(String name, Category parent) {
+        return new Category(name, Objects.requireNonNull(parent));
+    }
+
+    private static String normalizeName(String name) {
+        String trimmed = name.trim();
+        if (trimmed.isEmpty()) {
+            throw new IllegalArgumentException("Category name cannot be empty");
+        }
+        return trimmed.replaceAll("\\s+", " ");
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public Category getParent() {
+        return parent;
+    }
+
+    public boolean isTopLevel() {
+        return parent == null;
+    }
+
+    /**
+     * Useful for display or reporting: "Food & Drinks > Coffee"
+     */
+    public String getFullPath() {
+        if (parent == null) {
+            return name;
+        }
+        return parent.getFullPath() + " > " + name;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Category category = (Category) o;
+        return name.equalsIgnoreCase(category.name);
+    }
+
+    @Override
+    public int hashCode() {
+        return name.toLowerCase().hashCode();
+    }
+
+    @Override
+    public String toString() {
+        return name;
     }
 }
