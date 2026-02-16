@@ -16,7 +16,7 @@ public class MoneyTest {
     @DisplayName("should create valid money and preserve scale")
     void shouldCreateAndNormalizeScale() {
         Money money = Money.of(new BigDecimal("123.456"), CurrencyCode.GBP);
-        assertThat(money.getAmount()).isEqualByComparingTo("123.46");
+        assertThat(money.getAmount()).isEqualByComparingTo("123.456");
         assertThat(money.getCurrency()).isEqualTo(CurrencyCode.GBP);
     }
 
@@ -26,7 +26,7 @@ public class MoneyTest {
             assertThatThrownBy(()->
                     Money.of(new BigDecimal("-100.00"), CurrencyCode.GBP))
                     .isInstanceOf(InvalidAmountException.class)
-                    .hasMessageContaining("Money amount cannot be negative");
+                    .hasMessageContaining("amount cannot be negative");
     }
 
     @Test

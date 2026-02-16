@@ -2,10 +2,7 @@ package entities;
 
 import enums.TransactionSource;
 import enums.TransactionType;
-import exceptions.DomainValidationException;
-import exceptions.InconsistentCurrencyException;
-import exceptions.InvalidAmountException;
-import exceptions.MissingRequiredFieldException;
+import exceptions.*;
 import valueObjects.*;
 
 import java.math.BigDecimal;
@@ -186,7 +183,7 @@ public class Transaction {
 
     private void validate() {
         if (amount == null || amount.isZeroOrNegative()) {
-            throw new InvalidAmountException("Amount must be positive");
+            throw new InvalidAmountException("amount cannot be negative");
         }
 
         if (type == null) {
@@ -199,7 +196,7 @@ public class Transaction {
 
         // Optional: prevent future dates for most cases (can be overridden in subclasses or config)
         if (date.isAfter(TransactionDate.now()) && type == TransactionType.DEBIT) {
-            throw new DomainValidationException("Debit transactions cannot have future dates");
+            throw new TransactionValidationException("Debit transactions cannot have future dates");
         }
 
         // Currency consistency (if account is set)

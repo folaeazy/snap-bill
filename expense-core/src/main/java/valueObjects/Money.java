@@ -19,15 +19,16 @@ public final class Money {
     private final CurrencyCode currency;
 
     private Money(BigDecimal amount, CurrencyCode currency) {
-        BigDecimal normalizedAmount = Objects.requireNonNull(amount, "Amount cannot be null")
-                .setScale(2, RoundingMode.HALF_EVEN);
+        Objects.requireNonNull(amount, "Amount cannot be null");
+        Objects.requireNonNull(currency, "currency cannot be null");
 
-        if (normalizedAmount.compareTo(BigDecimal.ZERO) < 0) {
-            throw new InvalidAmountException("Money amount cannot be negative");
+
+        if (amount.compareTo(BigDecimal.ZERO) < 0) {
+            throw new InvalidAmountException("amount cannot be negative");
         }
 
-        this.amount = normalizedAmount;
-        this.currency = Objects.requireNonNull(currency, "currency cannot be null");
+        this.amount = amount.stripTrailingZeros();
+        this.currency = currency;
     }
 
     public static Money of(BigDecimal amount, CurrencyCode currency) {
@@ -38,6 +39,20 @@ public final class Money {
         return new Money(BigDecimal.ZERO, currency);
     }
 
+    // Optional: explicit rounding method (use only when needed)
+    public Money roundToCurrencyScale() {
+        int scale = getTypicalScaleForCurrency(currency);
+        return new Money(amount.setScale(scale, RoundingMode.HALF_UP), currency);
+    }
+
+    private static int getTypicalScaleForCurrency(CurrencyCode c) {
+        // In real app → could come from a currency registry
+        return switch (c) {
+            case NGN, USD, EUR, GBP -> 2;
+            // case JPY, KRW -> 0;
+            default -> 2;
+        };
+    }
     public BigDecimal getAmount() {
         return amount;
     }
