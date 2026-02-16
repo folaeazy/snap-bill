@@ -2,6 +2,7 @@ package valueObjects;
 
 import enums.CurrencyCode;
 import exceptions.InconsistentCurrencyException;
+import exceptions.InvalidAmountException;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -17,12 +18,12 @@ public final class Money {
     private final BigDecimal amount;
     private final CurrencyCode currency;
 
-    Money(BigDecimal amount, CurrencyCode currency) {
+    private Money(BigDecimal amount, CurrencyCode currency) {
         BigDecimal normalizedAmount = Objects.requireNonNull(amount, "Amount cannot be null")
                 .setScale(2, RoundingMode.HALF_EVEN);
 
         if (normalizedAmount.compareTo(BigDecimal.ZERO) < 0) {
-            throw new IllegalArgumentException("utils.Money amount cannot be negative");
+            throw new InvalidAmountException("Money amount cannot be negative");
         }
 
         this.amount = normalizedAmount;
