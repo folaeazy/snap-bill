@@ -1,6 +1,7 @@
 package valueObjects;
 
 import enums.CurrencyCode;
+import exceptions.InconsistentCurrencyException;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -16,12 +17,12 @@ public final class Money {
     private final BigDecimal amount;
     private final CurrencyCode currency;
 
-    private Money(BigDecimal amount, CurrencyCode currency) {
+    Money(BigDecimal amount, CurrencyCode currency) {
         BigDecimal normalizedAmount = Objects.requireNonNull(amount, "Amount cannot be null")
                 .setScale(2, RoundingMode.HALF_EVEN);
 
         if (normalizedAmount.compareTo(BigDecimal.ZERO) < 0) {
-            throw new IllegalArgumentException("Money amount cannot be negative");
+            throw new IllegalArgumentException("utils.Money amount cannot be negative");
         }
 
         this.amount = normalizedAmount;
@@ -52,6 +53,11 @@ public final class Money {
         return amount.compareTo(BigDecimal.ZERO) > 0;
     }
 
+    public boolean isZeroOrNegative() {
+        return amount.compareTo(BigDecimal.ZERO) <= 0;
+    }
+
+
     // Basic arithmetic (returns new instance)
     public Money add(Money other) {
         checkSameCurrency(other);
@@ -65,11 +71,10 @@ public final class Money {
 
     private void checkSameCurrency(Money other) {
         if (!this.currency.equals(other.currency)) {
-            throw new IllegalArgumentException(
+            throw new InconsistentCurrencyException(
                     "Currencies must match: " + this.currency + " vs " + other.currency);
         }
     }
-
 
     @Override
     public boolean equals(Object o) {
