@@ -16,17 +16,6 @@
     <description>Core domain models and shared utilities</description>
 
     <dependencies>
-        <dependency>
-            <groupId>org.projectlombok</groupId>
-            <artifactId>lombok</artifactId>
-            <scope>provided</scope>
-        </dependency>
-
-        <!-- Jakarta Bean Validation API (annotations only – no impl) -->
-        <dependency>
-            <groupId>jakarta.validation</groupId>
-            <artifactId>jakarta.validation-api</artifactId>
-        </dependency>
 
         <!-- Test scope only -->
         <dependency>
