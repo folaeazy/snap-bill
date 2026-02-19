@@ -10,6 +10,7 @@ import lombok.Setter;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 @Entity
@@ -48,6 +49,17 @@ public class User {
     @Enumerated(EnumType.STRING)
     @Column
     private CurrencyCode defaultCurrency = CurrencyCode.NGN;
+
+    @Column(name = "password_hash")
+    private String passwordHash; // bcrypt, nullable if OAuth-only
+
+    @Column(nullable = false)
+    private boolean enabled = true;
+
+    @ElementCollection(fetch = FetchType.EAGER)
+    @CollectionTable(name = "user_authorities", joinColumns = @JoinColumn(name = "user_id"))
+    @Column(name = "authority")
+    private Set<String> authorities = Set.of("USER"); // default role
 
     // Helper method
     public void addEmailAccount(EmailAccount account) {

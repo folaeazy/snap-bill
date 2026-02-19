@@ -57,8 +57,8 @@ public class Transaction {
     @Column(name = "tag")
     private Set<String> tags = new HashSet<>();
 
-    @Embedded
-    private BankAccountRefEmbeddable bankAccount;
+//    @Embedded
+//    private BankAccountRefEmbeddable bankAccount;
 
     @Column(columnDefinition = "text")
     private String description;
