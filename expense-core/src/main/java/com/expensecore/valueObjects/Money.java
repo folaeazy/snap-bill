@@ -1,8 +1,8 @@
-package valueObjects;
+package com.expensecore.valueObjects;
 
-import enums.CurrencyCode;
-import exceptions.InconsistentCurrencyException;
-import exceptions.InvalidAmountException;
+import com.expensecore.enums.CurrencyCode;
+import com.expensecore.exceptions.InconsistentCurrencyException;
+import com.expensecore.exceptions.InvalidAmountException;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;

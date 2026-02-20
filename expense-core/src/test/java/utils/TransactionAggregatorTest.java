@@ -1,14 +1,14 @@
 package utils;
 
-import entities.Transaction;
-import enums.CurrencyCode;
-import enums.TransactionSource;
-import enums.TransactionType;
-import org.junit.jupiter.api.DisplayName;
+import com.expensecore.entities.Transaction;
+import com.expensecore.utils.TransactionAggregator;
+import com.expensecore.enums.CurrencyCode;
+import com.expensecore.enums.TransactionSource;
+import com.expensecore.enums.TransactionType;
 import org.junit.jupiter.api.Test;
-import valueObjects.Category;
-import valueObjects.Money;
-import valueObjects.TransactionDate;
+import com.expensecore.valueObjects.Category;
+import com.expensecore.valueObjects.Money;
+import com.expensecore.valueObjects.TransactionDate;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
 import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
 

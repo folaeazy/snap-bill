@@ -20,7 +20,7 @@ public class UserDetailsServiceImp implements UserDetailsService {
         // Username = email from JwT
 
         User user = userRepository.findByEmail(username)
-                .orElseThrow(() -> new UsernameNotFoundException("User not found with email: "));
+                .orElseThrow(() -> new UsernameNotFoundException("User not found with email: " + username));
 
         if (!user.isEnabled()) {
             throw new UsernameNotFoundException("User account is disabled: " + username);

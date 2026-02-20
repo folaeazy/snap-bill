@@ -20,7 +20,8 @@ public class CustomAccessDenyHandler implements AccessDeniedHandler {
     private final ObjectMapper objectMapper;
 
     @Override
-    public void handle(HttpServletRequest request, HttpServletResponse response, AccessDeniedException accessDeniedException) throws IOException, ServletException {
+    public void handle(HttpServletRequest request, HttpServletResponse response, AccessDeniedException accessDeniedException)
+            throws IOException, ServletException {
 
         ApiResponse<Void> errorResponse = ApiResponse.<Void>builder()
                 .statusCode(HttpStatus.FORBIDDEN.value())

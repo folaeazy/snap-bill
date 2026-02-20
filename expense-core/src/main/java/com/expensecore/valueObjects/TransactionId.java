@@ -1,4 +1,4 @@
-package valueObjects;
+package com.expensecore.valueObjects;
 
 import java.util.Objects;
 import java.util.UUID;

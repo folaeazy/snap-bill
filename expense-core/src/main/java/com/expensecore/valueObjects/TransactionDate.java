@@ -1,4 +1,4 @@
-package valueObjects;
+package com.expensecore.valueObjects;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;

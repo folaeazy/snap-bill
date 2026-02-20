@@ -1,7 +1,7 @@
-package exceptions;
+package com.expensecore.exceptions;
 
 
-import enums.CurrencyCode;
+import com.expensecore.enums.CurrencyCode;
 
 /**
  * Thrown when currencies don't match in a context where they must be the same.

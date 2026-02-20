@@ -3,6 +3,7 @@ package com.expenseapp.app.config;
 import com.expenseapp.app.exceptions.CustomAccessDenyHandler;
 import com.expenseapp.app.exceptions.CustomAuthEntryHandler;
 import com.expenseapp.app.security.JwtAuthenticationFilter;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -44,6 +45,8 @@ public class SecurityConfig {
 
 
     }
+
+
 
 
 

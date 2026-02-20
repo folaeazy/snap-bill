@@ -1,12 +1,13 @@
-package utils;
+package com.expensecore.utils;
 
 
-import entities.Transaction;
-import enums.TransactionType;
-import valueObjects.Category;
-import valueObjects.Description;
-import valueObjects.Merchant;
-import valueObjects.Tag;
+
+import com.expensecore.entities.Transaction;
+import com.expensecore.enums.TransactionType;
+import com.expensecore.valueObjects.Category;
+import com.expensecore.valueObjects.Description;
+import com.expensecore.valueObjects.Merchant;
+import com.expensecore.valueObjects.Tag;
 
 import java.time.LocalDate;
 import java.util.function.Predicate;

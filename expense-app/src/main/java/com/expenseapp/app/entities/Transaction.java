@@ -38,6 +38,10 @@ public class Transaction {
     private TransactionType type;
 
     @Embedded
+    @AttributeOverrides({
+            @AttributeOverride(name = "amount", column = @Column(name = "amount")),
+            @AttributeOverride(name = "currency", column = @Column(name = "amount_currency"))
+    })
     private MoneyEmbeddable amount;
 
     @Column(nullable = false)
@@ -57,8 +61,14 @@ public class Transaction {
     @Column(name = "tag")
     private Set<String> tags = new HashSet<>();
 
-//    @Embedded
-//    private BankAccountRefEmbeddable bankAccount;
+    @Embedded
+    @AttributeOverrides({
+            @AttributeOverride(name = "accountId", column = @Column(name = "bank_account_id")),
+            @AttributeOverride(name = "label", column = @Column(name = "bank_label")),
+            @AttributeOverride(name = "last4", column = @Column(name = "bank_last4")),
+            @AttributeOverride(name = "currency", column = @Column(name = "bank_currency"))
+    })
+    private BankAccountRefEmbeddable bankAccount;
 
     @Column(columnDefinition = "text")
     private String description;

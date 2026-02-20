@@ -1,4 +1,4 @@
-package exceptions;
+package com.expensecore.exceptions;
 
 /**
  * Thrown when a monetary amount violates domain rules.

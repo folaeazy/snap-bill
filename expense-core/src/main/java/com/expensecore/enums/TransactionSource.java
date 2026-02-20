@@ -1,4 +1,4 @@
-package enums;
+package com.expensecore.enums;
 
 public enum TransactionSource {
     MANUAL,             // user entered directly

@@ -1,8 +1,9 @@
 package valueObjects;
 
-import enums.CurrencyCode;
-import exceptions.InconsistentCurrencyException;
-import exceptions.InvalidAmountException;
+import com.expensecore.enums.CurrencyCode;
+import com.expensecore.exceptions.InconsistentCurrencyException;
+import com.expensecore.exceptions.InvalidAmountException;
+import com.expensecore.valueObjects.Money;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import static org.assertj.core.api.Assertions.*;

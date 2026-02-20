@@ -48,6 +48,7 @@ public class JwtUtils {
     private String createToken(Map<String, Object> claims, String subject) {
         final Date now = new Date();
         final Date expiration = new Date(now.getTime() + expirationMs);
+        System.out.println("Token Generated Successfully.......");
         return Jwts.builder()
                 .claims()
                 .add(claims)
@@ -57,6 +58,7 @@ public class JwtUtils {
                 .and()
                 .signWith(getSigningKey())
                 .compact();
+
     }
 
     /**

@@ -1,10 +1,11 @@
-package utils;
+package com.expensecore.utils;
 
 
-import entities.Transaction;
-import enums.CurrencyCode;
-import valueObjects.Category;
-import valueObjects.Money;
+
+import com.expensecore.entities.Transaction;
+import com.expensecore.enums.CurrencyCode;
+import com.expensecore.valueObjects.Category;
+import com.expensecore.valueObjects.Money;
 
 import java.math.BigDecimal;
 import java.util.Collection;

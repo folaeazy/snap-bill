@@ -1,14 +1,14 @@
 package entities;
 
-import enums.CurrencyCode;
-import enums.TransactionSource;
-import enums.TransactionType;
-import exceptions.InvalidAmountException;
-import exceptions.TransactionValidationException;
+import com.expensecore.entities.Transaction;
+import com.expensecore.enums.CurrencyCode;
+import com.expensecore.enums.TransactionSource;
+import com.expensecore.enums.TransactionType;
+import com.expensecore.exceptions.TransactionValidationException;
+import com.expensecore.valueObjects.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import valueObjects.*;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;

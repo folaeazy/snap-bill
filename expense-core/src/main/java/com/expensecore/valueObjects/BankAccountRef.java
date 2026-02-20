@@ -1,7 +1,7 @@
-package valueObjects;
+package com.expensecore.valueObjects;
 
 
-import enums.CurrencyCode;
+import com.expensecore.enums.CurrencyCode;
 
 import java.util.Objects;
 
