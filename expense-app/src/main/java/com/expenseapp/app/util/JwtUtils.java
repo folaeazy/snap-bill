@@ -29,6 +29,7 @@ public class JwtUtils {
 
     @Value("${jwt.expiration-ms:1800000}") // 30 minutes default
     private long expirationMs;
+    Map<String, Object> claims = new HashMap<>();
 
     private SecretKey getSigningKey() {
         return Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
@@ -41,7 +42,6 @@ public class JwtUtils {
      */
 
     public String generateToken(String email) {
-        Map<String, Object> claims = new HashMap<>();
         return createToken(claims, email);
     }
 

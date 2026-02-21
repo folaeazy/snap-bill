@@ -19,7 +19,7 @@ public class AuthController {
     // Temporary dev endpoint - remove in production
     @GetMapping("/test-token")
     public ResponseEntity<ApiResponse<String>> getTestToken() {
-        String testEmail = "test@snapbill.com";
+        String testEmail = "freshmailer36@gmail.com";
         String token = jwtUtils.generateToken(testEmail);
 
         ApiResponse<String> response = ApiResponse.<String>builder()
