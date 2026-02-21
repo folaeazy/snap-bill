@@ -13,12 +13,10 @@
     <description>Reusable modular engine for SnapBill expense tracker</description>
 
     <modules>
-        <module>expense-core</module>
-        <module>expense-ai</module>
-        <module>expense-scheduler</module>
+        <module>expense-domain</module>
         <module>expense-email-integration</module>
-        <module>expense-reporting</module>
         <module>expense-app</module>
+        <module>expense-infrastructure</module>
     </modules>
 
     <properties>

@@ -5,10 +5,12 @@
     <file url="file://$PROJECT_DIR$/expense-ai/src/main/resources" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/expense-app/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/expense-app/src/main/resources" charset="UTF-8" />
-    <file url="file://$PROJECT_DIR$/expense-core/src/main/java" charset="UTF-8" />
-    <file url="file://$PROJECT_DIR$/expense-core/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/expense-domain/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/expense-domain/src/main/resources" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/expense-email-integration/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/expense-email-integration/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/expense-infrastructure/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/expense-infrastructure/src/main/resources" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/expense-reporting/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/expense-reporting/src/main/resources" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/expense-scheduler/src/main/java" charset="UTF-8" />

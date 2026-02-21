@@ -3,8 +3,8 @@ package com.expenseapp.app.entities;
 
 import com.expenseapp.app.entities.embenddables.BankAccountRefEmbeddable;
 import com.expenseapp.app.entities.embenddables.MoneyEmbeddable;
-import com.expensecore.enums.TransactionSource;
-import com.expensecore.enums.TransactionType;
+import com.domain.enums.TransactionSource;
+import com.domain.enums.TransactionType;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;

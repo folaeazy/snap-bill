@@ -19,29 +19,11 @@
         <!-- Module dependency -->
         <dependency>
             <groupId>dev.fola</groupId>
-            <artifactId>expense-core</artifactId>
+            <artifactId>expense-domain</artifactId>
             <version>${project.version}</version>
         </dependency>
-        <dependency>
-            <groupId>dev.fola</groupId>
-            <artifactId>expense-ai</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>dev.fola</groupId>
-            <artifactId>expense-email-integration</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>dev.fola</groupId>
-            <artifactId>expense-scheduler</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>dev.fola</groupId>
-            <artifactId>expense-reporting</artifactId>
-            <version>${project.version}</version>
-        </dependency>
+
+
         <!--Spring web and spring security  && validation -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
