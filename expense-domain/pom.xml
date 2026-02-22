@@ -12,10 +12,26 @@
     <artifactId>expense-domain</artifactId>
     <packaging>jar</packaging>
 
-    <name>expense-core</name>
+    <name>expense-domain</name>
     <description>Core domain models and shared utilities</description>
 
     <dependencies>
+
+        <!-- Jakarta Persistence (for @Entity, @Id, etc.) -->
+        <dependency>
+            <groupId>jakarta.persistence</groupId>
+            <artifactId>jakarta.persistence-api</artifactId>
+            <version>3.1.0</version>
+            <scope>provided</scope> <!-- provided because runtime is in infrastructure/app -->
+        </dependency>
+
+        <!-- Lombok (optional – if you want to reduce boilerplate) -->
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <version>1.18.42</version>
+            <scope>provided</scope>
+        </dependency>
 
         <!-- Test scope only -->
         <dependency>
@@ -31,5 +47,18 @@
             <scope>test</scope>
         </dependency>
     </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <configuration>
+                    <source>21</source>
+                    <target>21</target>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
 
 </project>

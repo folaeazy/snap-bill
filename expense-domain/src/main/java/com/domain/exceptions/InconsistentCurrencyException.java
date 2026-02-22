@@ -1,7 +1,7 @@
 package com.domain.exceptions;
 
 
-import com.domain.enums.CurrencyCode;
+import com.domain.valueObjects.CurrencyCode;
 
 /**
  * Thrown when currencies don't match in a context where they must be the same.

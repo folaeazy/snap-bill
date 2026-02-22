@@ -1,8 +1,6 @@
 package com.domain.valueObjects;
 
 
-import com.domain.enums.CurrencyCode;
-
 import java.util.Objects;
 
 /**

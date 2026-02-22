@@ -1,6 +1,5 @@
 package com.domain.valueObjects;
 
-import com.domain.enums.CurrencyCode;
 import com.domain.exceptions.InconsistentCurrencyException;
 import com.domain.exceptions.InvalidAmountException;
 

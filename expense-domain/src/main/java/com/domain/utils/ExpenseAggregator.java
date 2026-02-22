@@ -3,7 +3,7 @@ package com.domain.utils;
 
 
 import com.domain.entities.Transaction;
-import com.domain.enums.CurrencyCode;
+import com.domain.valueObjects.CurrencyCode;
 import com.domain.valueObjects.Category;
 import com.domain.valueObjects.Money;
 
@@ -16,9 +16,9 @@ import java.util.stream.Collectors;
 /**
  * Pure aggregation / summary functions over collections of transactions.
  */
-public final class TransactionAggregator {
+public final class ExpenseAggregator {
 
-    private TransactionAggregator() {
+    private ExpenseAggregator() {
         // prevent instantiation
     }
 
@@ -32,7 +32,7 @@ public final class TransactionAggregator {
 
         CurrencyCode currency = determineCommonCurrency(transactions);
         BigDecimal sum = transactions.stream()
-                .filter(TransactionFilters.isDebit())
+                .filter(ExpenseFilters.isDebit())
                 .map(Transaction::getAmount)
                 .map(Money::getAmount)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
@@ -48,7 +48,7 @@ public final class TransactionAggregator {
         CurrencyCode currency = determineCommonCurrency(transactions);
 
         return transactions.stream()
-                .filter(TransactionFilters.isDebit())
+                .filter(ExpenseFilters.isDebit())
                 .filter(t->t.getCategory() != null)
                 .collect(Collectors.groupingBy(
                         Transaction::getCategory,

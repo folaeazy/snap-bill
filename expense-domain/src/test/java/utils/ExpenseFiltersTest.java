@@ -1,9 +1,9 @@
 package utils;
 
 import com.domain.entities.Transaction;
-import com.domain.utils.TransactionFilters;
+import com.domain.utils.ExpenseFilters;
 
-import com.domain.enums.CurrencyCode;
+import com.domain.valueObjects.CurrencyCode;
 import com.domain.enums.TransactionSource;
 import com.domain.enums.TransactionType;
 import org.junit.jupiter.api.Test;
@@ -16,15 +16,15 @@ import java.util.Set;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
-public class TransactionFiltersTest {
+public class ExpenseFiltersTest {
 
     @Test
     void isDebit_shouldFilterCorrectly() {
         Transaction debit = createDebit();
         Transaction credit = createCredit();
 
-        assertThat(TransactionFilters.isDebit().test(debit)).isTrue();
-        assertThat(TransactionFilters.isDebit().test(credit)).isFalse();
+        assertThat(ExpenseFilters.isDebit().test(debit)).isTrue();
+        assertThat(ExpenseFilters.isDebit().test(credit)).isFalse();
 
     }
 
@@ -33,8 +33,8 @@ public class TransactionFiltersTest {
         Transaction txJan = createWithDate(LocalDate.of(2026, 1, 15));
         Transaction txFeb = createWithDate(LocalDate.of(2026, 2, 10));
 
-        assertThat(TransactionFilters.inMonth(2026,1).test(txJan)).isTrue();
-        assertThat(TransactionFilters.inMonth(2026,1).test(txFeb)).isFalse();
+        assertThat(ExpenseFilters.inMonth(2026,1).test(txJan)).isTrue();
+        assertThat(ExpenseFilters.inMonth(2026,1).test(txFeb)).isFalse();
     }
 
 

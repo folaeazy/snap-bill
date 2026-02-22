@@ -1,6 +1,6 @@
-package com.expenseapp.app.entities;
+package com.domain.entities;
 
-import com.expenseapp.app.emuns.AuthProvider;
+import com.domain.enums.AuthProvider;
 import com.domain.valueObjects.CurrencyCode;
 import jakarta.persistence.*;
 import lombok.Getter;

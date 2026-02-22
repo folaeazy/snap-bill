@@ -1,6 +1,6 @@
 package valueObjects;
 
-import com.domain.enums.CurrencyCode;
+import com.domain.valueObjects.CurrencyCode;
 import com.domain.exceptions.InconsistentCurrencyException;
 import com.domain.exceptions.InvalidAmountException;
 import com.domain.valueObjects.Money;

@@ -20,9 +20,9 @@ import java.util.function.Predicate;
  *     .filter(TransactionFilters.inMonth(2026, 2))
  *     .toList();
  */
-public final class TransactionFilters {
+public final class ExpenseFilters {
 
-    private TransactionFilters() {} // prevent instantiation
+    private ExpenseFilters() {} // prevent instantiation
 
     public static Predicate<Transaction> isDebit () {
         return t-> t.getType() == TransactionType.DEBIT;

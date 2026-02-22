@@ -1,6 +1,6 @@
 package com.expenseapp.app.entities.embenddables;
 
-import com.domain.enums.CurrencyCode;
+import com.domain.valueObjects.CurrencyCode;
 import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
 import jakarta.persistence.EnumType;

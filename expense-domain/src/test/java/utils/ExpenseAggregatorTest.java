@@ -1,8 +1,8 @@
 package utils;
 
 import com.domain.entities.Transaction;
-import com.domain.utils.TransactionAggregator;
-import com.domain.enums.CurrencyCode;
+import com.domain.utils.ExpenseAggregator;
+import com.domain.valueObjects.CurrencyCode;
 import com.domain.enums.TransactionSource;
 import com.domain.enums.TransactionType;
 import org.junit.jupiter.api.Test;
@@ -17,7 +17,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-public class TransactionAggregatorTest {
+public class ExpenseAggregatorTest {
 
     @Test
     //@DisplayName("")
@@ -30,7 +30,7 @@ public class TransactionAggregatorTest {
 
         );
 
-        assertThatThrownBy(()-> TransactionAggregator.totalDebits(txs)).isInstanceOf(IllegalArgumentException.class)
+        assertThatThrownBy(()-> ExpenseAggregator.totalDebits(txs)).isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("Transactions contain multiple currencies");
 
     }
@@ -45,7 +45,7 @@ public class TransactionAggregatorTest {
 
         );
 
-        Map<Category, Money> sums = TransactionAggregator.sumByCategory(txs);
+        Map<Category, Money> sums = ExpenseAggregator.sumByCategory(txs);
 
         assertThat(sums).hasSize(2);
         assertThat(sums.get(Category.of("Subscriptions")).getAmount()).isEqualByComparingTo("5500.00");
@@ -59,7 +59,7 @@ public class TransactionAggregatorTest {
                 createDebit(5000,"suns", CurrencyCode.NGN)
         );
 
-        assertThatThrownBy(() -> TransactionAggregator.totalDebits(txs))
+        assertThatThrownBy(() -> ExpenseAggregator.totalDebits(txs))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("multiple currencies");
     }
