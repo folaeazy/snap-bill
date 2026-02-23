@@ -6,7 +6,6 @@ import com.domain.enums.TransactionSource;
 import com.domain.enums.TransactionType;
 import com.domain.exceptions.TransactionValidationException;
 import com.domain.valueObjects.*;
-import com.expensecore.valueObjects.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -14,7 +13,6 @@ import org.junit.jupiter.api.Test;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.Set;
-
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
 

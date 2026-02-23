@@ -1,6 +1,7 @@
 package com.expenseapp.app.security;
 
-import com.expenseapp.app.entities.User;
+
+import com.domain.entities.User;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;

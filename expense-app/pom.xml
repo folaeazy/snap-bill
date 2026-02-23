@@ -4,7 +4,7 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
-        <groupId>dev.fola</groupId>
+        <groupId>dev.fola.snapbill</groupId>
         <artifactId>snap-bill</artifactId>
         <version>1.0-SNAPSHOT</version>
     </parent>
@@ -18,8 +18,14 @@
     <dependencies>
         <!-- Module dependency -->
         <dependency>
-            <groupId>dev.fola</groupId>
+            <groupId>dev.fola.snapbill</groupId>
             <artifactId>expense-domain</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>dev.fola.snapbill</groupId>
+            <artifactId>expense-infrastructure</artifactId>
             <version>${project.version}</version>
         </dependency>
 
@@ -37,6 +43,12 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-validation</artifactId>
         </dependency>
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-jpa</artifactId>
+        </dependency>
+
 
         <!-- JWT  security-->
         <dependency>
@@ -74,23 +86,12 @@
             <groupId>org.springframework.security</groupId>
             <artifactId>spring-security-oauth2-jose</artifactId>
         </dependency>
-
-        <!-- PostgreSQL -->
         <dependency>
-            <groupId>org.postgresql</groupId>
-            <artifactId>postgresql</artifactId>
-            <scope>runtime</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-data-jpa</artifactId>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+            <version>2.18.3</version>
         </dependency>
 
-        <!--  Flyway for migrations -->
-        <dependency>
-            <groupId>org.flywaydb</groupId>
-            <artifactId>flyway-core</artifactId>
-        </dependency>
     </dependencies>
 
     <build>

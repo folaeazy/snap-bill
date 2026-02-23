@@ -1,7 +1,9 @@
 package com.expenseapp.app.service;
 
-import com.expenseapp.app.entities.User;
-import com.expenseapp.app.repositories.UserRepository;
+
+
+import com.domain.entities.User;
+import com.domain.repositories.UserRepository;
 import com.expenseapp.app.security.AuthenticatedUser;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.userdetails.UserDetails;

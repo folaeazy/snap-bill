@@ -62,15 +62,15 @@ public class User {
     private Set<String> authorities = Set.of("USER"); // default role
 
     // Helper method
-    public void addEmailAccount(EmailAccount account) {
-        emailAccounts.add(account);
-        account.setUser(this);
-    }
-
-    public void removeEmailAccount(EmailAccount account) {
-        emailAccounts.remove(account);
-        account.setUser(null);
-    }
+//    public void addEmailAccount(EmailAccount account) {
+//        emailAccounts.add(account);
+//        account.setUser(this);
+//    }
+//
+//    public void removeEmailAccount(EmailAccount account) {
+//        emailAccounts.remove(account);
+//        account.setUser(null);
+//    }
 
 
 
