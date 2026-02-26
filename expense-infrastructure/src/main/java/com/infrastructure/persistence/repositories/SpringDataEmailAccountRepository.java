@@ -11,6 +11,6 @@ import java.util.UUID;
  * This is the concrete persistence adapter.
  */
 @Repository
-public interface EmailAccountRepositoryImp extends JpaRepository<EmailAccount, UUID>, EmailAccountRepository {
+public interface SpringDataEmailAccountRepository extends JpaRepository<EmailAccount, UUID>, EmailAccountRepository {
     // The domain interface methods are automatically implemented by Spring Data JPA
 }

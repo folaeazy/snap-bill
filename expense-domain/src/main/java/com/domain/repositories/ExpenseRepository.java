@@ -29,12 +29,12 @@ public interface ExpenseRepository {
     /**
      * Find all expenses for a user within a date range.
      */
-    List<Expense> findByUserIdAndDateRange(UUID userId, LocalDate start, LocalDate endInclusive);
+    List<Expense> findByUserIdAndTransactionDateBetween(UUID userId, LocalDate start, LocalDate endInclusive);
 
     /**
      * Find debits (expenses) only for a user in a date range.
      */
-    List<Expense> findDebitsByUserIdAndDateRange(UUID userId, LocalDate start, LocalDate endInclusive);
+    List<Expense> findDebitsByUserIdAndTransactionDateBetween(UUID userId, LocalDate start, LocalDate endInclusive);
 
     /**
      * Find expenses by type (e.g. all DEBIT for dashboard totals).
@@ -49,7 +49,7 @@ public interface ExpenseRepository {
     /**
      * Count expenses in a period (for quick summaries without loading full list).
      */
-    long countByUserIdAndDateRange(UUID userId, LocalDate start, LocalDate endInclusive);
+    long countByUserIdAndTransactionDateBetween(UUID userId, LocalDate start, LocalDate endInclusive);
 
     /**
      * Delete an expense (soft or hard — depends on your business rules).

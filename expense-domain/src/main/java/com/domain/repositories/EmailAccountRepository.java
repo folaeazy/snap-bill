@@ -40,5 +40,5 @@ public interface EmailAccountRepository {
     /**
      * Find accounts that need syncing (e.g. status ACTIVE and lastSyncAt older than threshold).
      */
-    List<EmailAccount> findSyncableAccounts();
+    //List<EmailAccount> findSyncableAccounts();
 }

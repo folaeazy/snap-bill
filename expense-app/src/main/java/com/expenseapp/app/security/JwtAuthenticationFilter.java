@@ -40,10 +40,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         final String authHeader = request.getHeader(AUTH_HEADER);
         if(authHeader == null || !authHeader.startsWith(BEARER_PREFIX)) {
             filterChain.doFilter(request, response);
+            return;
         }
 
         // get token from header
-        final String jwt = authHeader != null ? authHeader.substring(BEARER_PREFIX.length()) : null;
+        final String jwt = authHeader.substring(BEARER_PREFIX.length());
         final String username = jwtUtils.extractIdentifier(jwt);
 
         if(username != null && SecurityContextHolder.getContext().getAuthentication() == null) {

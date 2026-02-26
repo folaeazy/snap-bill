@@ -3,6 +3,7 @@ package com.expenseapp.app.config;
 import com.expenseapp.app.exceptions.CustomAccessDenyHandler;
 import com.expenseapp.app.exceptions.CustomAuthEntryHandler;
 import com.expenseapp.app.security.JwtAuthenticationFilter;
+import com.expenseapp.app.security.OAuth2AuthenticationSuccessHandler;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -25,16 +26,18 @@ public class SecurityConfig {
     private final CustomAccessDenyHandler customAccessDenyHandler;
     private final CustomAuthEntryHandler customAuthEntryHandler;
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
+    private final OAuth2AuthenticationSuccessHandler oAuth2AuthenticationSuccessHandler;
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception{
         return httpSecurity
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(request-> request
-                        .requestMatchers("/api/auth/**", "/health", "/error"
+                        .requestMatchers("/api/auth/**", "/health", "/error","/oauth2/**"
 
                 ).permitAll()
                         .anyRequest().authenticated())
+                .oauth2Login(oauth2-> oauth2.successHandler(oAuth2AuthenticationSuccessHandler))
                 .exceptionHandling(exceptions->
                         exceptions.accessDeniedHandler(customAccessDenyHandler).authenticationEntryPoint(customAuthEntryHandler))
                 .sessionManagement(session->

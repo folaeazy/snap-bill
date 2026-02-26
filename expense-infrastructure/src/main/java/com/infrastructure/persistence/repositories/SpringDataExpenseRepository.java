@@ -13,6 +13,6 @@ import java.util.UUID;
  */
 
 @Repository
-public interface ExpenseRepositoryImpl extends JpaRepository<Expense, UUID>, ExpenseRepository {
+public interface SpringDataExpenseRepository extends JpaRepository<Expense, UUID>, ExpenseRepository {
     // The domain interface methods are automatically implemented by Spring Data JPA
 }
