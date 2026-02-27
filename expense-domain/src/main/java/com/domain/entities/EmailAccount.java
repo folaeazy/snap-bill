@@ -46,6 +46,9 @@ public class EmailAccount {
     @Column
     private Instant lastSyncAt;
 
+    @Column
+    private Instant ExpiresAt;
+
    // status or error tracking
     @Enumerated(EnumType.STRING)
     private ConnectionStatus status = ConnectionStatus.ACTIVE;
