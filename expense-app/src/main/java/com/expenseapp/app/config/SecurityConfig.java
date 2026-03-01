@@ -3,6 +3,7 @@ package com.expenseapp.app.config;
 import com.expenseapp.app.exceptions.CustomAccessDenyHandler;
 import com.expenseapp.app.exceptions.CustomAuthEntryHandler;
 import com.expenseapp.app.security.JwtAuthenticationFilter;
+import com.expenseapp.app.security.OAuth2AuthenticationFailureHandler;
 import com.expenseapp.app.security.OAuth2AuthenticationSuccessHandler;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
@@ -27,17 +28,21 @@ public class SecurityConfig {
     private final CustomAuthEntryHandler customAuthEntryHandler;
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
     private final OAuth2AuthenticationSuccessHandler oAuth2AuthenticationSuccessHandler;
+    private final OAuth2AuthenticationFailureHandler oAuth2AuthenticationFailureHandler;
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception{
         return httpSecurity
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(request-> request
-                        .requestMatchers("/api/auth/**", "/health", "/error","/oauth2/**"
+                        .requestMatchers("/api/auth/**", "/health", "/login","/oauth2/**"
 
                 ).permitAll()
                         .anyRequest().authenticated())
-                .oauth2Login(oauth2-> oauth2.successHandler(oAuth2AuthenticationSuccessHandler))
+                .oauth2Login(oauth2-> oauth2
+                        .successHandler(oAuth2AuthenticationSuccessHandler)
+                        .failureHandler(oAuth2AuthenticationFailureHandler)
+                )
                 .exceptionHandling(exceptions->
                         exceptions.accessDeniedHandler(customAccessDenyHandler).authenticationEntryPoint(customAuthEntryHandler))
                 .sessionManagement(session->

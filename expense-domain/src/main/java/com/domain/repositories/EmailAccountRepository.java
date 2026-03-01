@@ -37,6 +37,8 @@ public interface EmailAccountRepository {
     Optional<EmailAccount> findByUserAndProviderAndProviderEmail(
             User user, EmailProvider provider, String providerEmail);
 
+    Optional<EmailAccount> findByUserIdAndProviderAndProviderEmail(UUID id, EmailProvider emailProvider, String email);
+
     /**
      * Find accounts that need syncing (e.g. status ACTIVE and lastSyncAt older than threshold).
      */
