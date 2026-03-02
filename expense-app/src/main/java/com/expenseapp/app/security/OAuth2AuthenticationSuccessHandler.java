@@ -61,9 +61,6 @@ public class OAuth2AuthenticationSuccessHandler implements AuthenticationSuccess
 
 
 
-
-
-
         // Find or create user
         User user = userRepository.findByEmail(email)
                     .orElseGet(() -> {
@@ -119,7 +116,7 @@ public class OAuth2AuthenticationSuccessHandler implements AuthenticationSuccess
 
             // Create first EmailAccount (the one used for login/signup)
             EmailAccount emailAccount = new EmailAccount();
-            emailAccount.setId(UUID.randomUUID());
+           // emailAccount.setId(UUID.randomUUID());
             emailAccount.setUser(user);
             emailAccount.setProvider(EmailProvider.valueOf(provider));
             emailAccount.setProviderEmail(email);
@@ -134,7 +131,6 @@ public class OAuth2AuthenticationSuccessHandler implements AuthenticationSuccess
 
             log.info("Created first EmailAccount for user {} with provider {}", user.getId(), provider);
         }
-
 
 
     // Generate JWT
