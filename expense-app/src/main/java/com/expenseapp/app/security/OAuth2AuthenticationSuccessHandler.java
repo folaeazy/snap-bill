@@ -7,8 +7,11 @@ import com.domain.enums.ConnectionStatus;
 import com.domain.enums.EmailProvider;
 import com.domain.repositories.EmailAccountRepository;
 import com.domain.repositories.UserRepository;
+import com.expenseapp.app.dto.OAuthResult;
+import com.expenseapp.app.service.OAuthService;
 import com.expenseapp.app.util.JwtUtils;
 import jakarta.servlet.ServletException;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -36,109 +39,42 @@ public class OAuth2AuthenticationSuccessHandler implements AuthenticationSuccess
     private final UserRepository userRepository;
     private final EmailAccountRepository emailAccountRepository;
     private final OAuth2AuthorizedClientService oAuth2AuthorizedClientService;
+    private final OAuthService oAuthService;
 
 
     @Override
-    @Transactional
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response,
                                         Authentication authentication) throws IOException, ServletException {
 
-        if (!(authentication instanceof OAuth2AuthenticationToken oauthToken)) {
-            response.sendRedirect("http://localhost:3000/me?error=auth_failed");
-            return;
-        }
-        OAuth2User oauthUser = (OAuth2User) authentication.getPrincipal();
-
-        String email = oauthUser != null ? oauthUser.getAttribute("email") : null;
-        String name = oauthUser != null ? oauthUser.getAttribute("name") : null;
-        String providerUserId = oauthUser != null ? oauthUser.getAttribute("sub") : null; // Google/Microsoft ID
-        String provider = oauthToken.getAuthorizedClientRegistrationId().toUpperCase();
-
-        if (email == null) {
-            response.sendRedirect("/error?msg=no_email");
-            return;
-        }
-
-
-
-        // Find or create user
-        User user = userRepository.findByEmail(email)
-                    .orElseGet(() -> {
-                        User newUser = new User();
-                        newUser.setEmail(email);
-                        newUser.setName(name);
-                        newUser.setAuthProvider(AuthProvider.valueOf(provider));
-                        newUser.setProviderUserId(providerUserId);
-                        newUser.setEnabled(true);
-                        return userRepository.save(newUser);
-                    });
-        Optional<EmailAccount> existingAccount = emailAccountRepository.findByUserIdAndProviderAndProviderEmail(
-                user.getId(), EmailProvider.valueOf(provider), email
-        );
-
-        if(existingAccount.isPresent()) {
-
-            // Extract tokens from oauth2 authorized client
-            OAuth2AuthorizedClient client = oAuth2AuthorizedClientService.loadAuthorizedClient(
-                    oauthToken.getAuthorizedClientRegistrationId(),
-                    oauthToken.getName()
-            );
-            if (client != null) {
-                String accessToken = client.getAccessToken().getTokenValue();
-                String refreshToken = client.getRefreshToken() != null ? client.getRefreshToken().getTokenValue() : null;
-                Instant expiresAt = client.getAccessToken().getExpiresAt() != null ?
-                        client.getAccessToken().getExpiresAt() : Instant.now().plusSeconds(3600);
-
-                EmailAccount account = existingAccount.get();
-
-                // update tokens
-                // Optional: update tokens if they changed (rare, but safe)
-                if (accessToken != null && !accessToken.equals(account.getAccessToken())) {
-                    account.setAccessToken(accessToken);
-                    account.setRefreshToken(refreshToken);
-                    account.setExpiresAt(expiresAt);
-                    emailAccountRepository.save(account);
-                    log.info("Updated tokens for existing EmailAccount {}", account.getId());
-                }
-            }
+        OAuthResult result = oAuthService.handle(authentication);
+        if(result.issueJwt()){
+            // Generate JWT
+            String jwt = jwtUtils.generateToken(result.email());
+            // Create cookie
+            Cookie cookie = new Cookie("AUTH_TOKEN", jwt);
+            cookie.setHttpOnly(true);
+            cookie.setSecure(true);
+            cookie.setMaxAge(60 * 60 * 24);
+            cookie.setPath("/");
+            response.addCookie(cookie);
+            response.sendRedirect("http://localhost:3000/dashboard");
 
         }else {
-
-            OAuth2AuthorizedClient client = oAuth2AuthorizedClientService.loadAuthorizedClient(
-                    oauthToken.getAuthorizedClientRegistrationId(),
-                    oauthToken.getName()
-            );
-
-            if (client == null) {
-                response.sendRedirect("/error?msg=no_client");
-                return;
-            }
-
-            // Create first EmailAccount (the one used for login/signup)
-            EmailAccount emailAccount = new EmailAccount();
-           // emailAccount.setId(UUID.randomUUID());
-            emailAccount.setUser(user);
-            emailAccount.setProvider(EmailProvider.valueOf(provider));
-            emailAccount.setProviderEmail(email);
-            emailAccount.setAccessToken(client.getAccessToken().getTokenValue());
-            emailAccount.setRefreshToken((client.getRefreshToken() != null ? client.getRefreshToken().getTokenValue() : null) != null ? client.getRefreshToken().getTokenValue() : null);
-            emailAccount.setExpiresAt(client.getAccessToken().getTokenValue() != null ? client.getAccessToken().getExpiresAt() : Instant.now().plusSeconds(3600));
-            emailAccount.setConnectedAt(Instant.now());
-            emailAccount.setLastSyncAt(null); // triggers full initial sync
-            emailAccount.setStatus(ConnectionStatus.ACTIVE);
-
-            emailAccountRepository.save(emailAccount);
-
-            log.info("Created first EmailAccount for user {} with provider {}", user.getId(), provider);
+            response.sendRedirect("http://localhost:3000/dashboard?linked=true");
         }
 
 
-    // Generate JWT
-        String jwt = jwtUtils.generateToken(user.getEmail());
+
+
+
+
+
+
+
+
 
             // Redirect to frontend with JWT (or set cookie)
-        String redirectUrl = "http://localhost:3000/dashboard?token=" + jwt; // adjust to your frontend
-        response.sendRedirect(redirectUrl);
+
 
 
     }
