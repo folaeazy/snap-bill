@@ -21,6 +21,9 @@ public class AuthController {
     public ResponseEntity<ApiResponse<String>> getTestToken() {
         String testEmail = "freshmailer36@gmail.com";
         String token = jwtUtils.generateToken(testEmail);
+        Thread t = Thread.currentThread();
+        System.out.println("Thread: " + t);
+        System.out.println("Is virtual: " + t.isVirtual());
 
         ApiResponse<String> response = ApiResponse.<String>builder()
                 .statusCode(HttpStatus.OK.value())

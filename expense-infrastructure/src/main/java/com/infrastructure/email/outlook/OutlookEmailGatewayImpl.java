@@ -11,7 +11,7 @@ import org.springframework.stereotype.Component;
 import java.time.Instant;
 import java.util.List;
 
-@Component("outlookEmailGateway")
+@Component("microsoftEmailGateway")
 @RequiredArgsConstructor
 @Slf4j
 public class OutlookEmailGatewayImpl implements EmailGateway {

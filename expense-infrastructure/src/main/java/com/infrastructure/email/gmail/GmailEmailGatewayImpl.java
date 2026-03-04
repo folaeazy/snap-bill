@@ -23,6 +23,7 @@ import com.google.auth.oauth2.GoogleCredentials;
 import com.infrastructure.email.DTO.EmailMessageDto;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
@@ -33,7 +34,7 @@ import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
 
-@Component("gmailEmailGateway")
+@Component("googleEmailGateway")
 @Slf4j
 @RequiredArgsConstructor
 public class GmailEmailGatewayImpl  implements EmailGateway {
@@ -43,8 +44,11 @@ public class GmailEmailGatewayImpl  implements EmailGateway {
     private static final String USER = "me"; // "me" = authenticated user
 
     // TODO: inject from config or secrets
-    private final String clientId;
-    private final String clientSecret;
+
+
+    private final String clientId = "";
+
+    private final String clientSecret = "";
 
     @Override
     public List<EmailMessage> fetchNewMessages(EmailAccount account, Instant since) {

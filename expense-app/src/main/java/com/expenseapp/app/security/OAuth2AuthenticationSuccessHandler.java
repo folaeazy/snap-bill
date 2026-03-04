@@ -30,7 +30,7 @@ import java.time.Instant;
 import java.util.Optional;
 import java.util.UUID;
 
-@Component("loginSuccessHandler")
+@Component
 @RequiredArgsConstructor
 @Slf4j
 public class OAuth2AuthenticationSuccessHandler implements AuthenticationSuccessHandler {
@@ -46,6 +46,11 @@ public class OAuth2AuthenticationSuccessHandler implements AuthenticationSuccess
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response,
                                         Authentication authentication) throws IOException, ServletException {
 
+        if (!(authentication instanceof OAuth2AuthenticationToken oauthToken)) {
+
+            return ;
+        }
+
         OAuthResult result = oAuthService.handle(authentication);
         if(result.issueJwt()){
             // Generate JWT
@@ -53,11 +58,11 @@ public class OAuth2AuthenticationSuccessHandler implements AuthenticationSuccess
             // Create cookie
             Cookie cookie = new Cookie("AUTH_TOKEN", jwt);
             cookie.setHttpOnly(true);
-            cookie.setSecure(true);
-            cookie.setMaxAge(60 * 60 * 24);
+            cookie.setSecure(false);
+            cookie.setMaxAge(60 * 30 ); // 30min
             cookie.setPath("/");
             response.addCookie(cookie);
-            response.sendRedirect("http://localhost:3000/dashboard");
+            response.sendRedirect("http://localhost:3000/dashboard"); // client domain
 
         }else {
             response.sendRedirect("http://localhost:3000/dashboard?linked=true");

@@ -3,6 +3,10 @@ server:
 
 baseUrl : http://localhost:8080
 
+app :
+  token:
+    secret: 3XbWzL8Wv3pF5m2qYcN7uQkR1tV6hJdP4sE9aTz0bYw=
+
 spring:
   application:
     name: snap bill-engine
@@ -40,8 +44,8 @@ spring:
       client:
         registration:
           google:
-            client-id: YOUR_GOOGLE_CLIENT_ID
-            client-secret: YOUR_GOOGLE_CLIENT_SECRET
+            client-id:
+            client-secret:
             scope: openid,profile,email,https://www.googleapis.com/auth/gmail.readonly
             redirect-uri: "{baseUrl}/login/oauth2/code/google"
             client-name: Google

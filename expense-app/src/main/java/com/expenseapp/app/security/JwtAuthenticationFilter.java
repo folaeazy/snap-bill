@@ -76,6 +76,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     }
 
     private void clearAuthCookie(HttpServletResponse response) {
+        Cookie cookie = new Cookie("AUTH_TOKEN", null);
+        cookie.setHttpOnly(true);
+        cookie.setSecure(true);
+        cookie.setPath("/");
+        cookie.setMaxAge(0);
+        response.addCookie(cookie);
     }
 
     private String extractTokenFromCookie(HttpServletRequest request) {

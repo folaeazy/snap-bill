@@ -9,7 +9,11 @@ import com.domain.repositories.EmailAccountRepository;
 import com.domain.repositories.UserRepository;
 import com.expenseapp.app.dto.OAuthResult;
 import com.expenseapp.app.util.JwtUtils;
+import com.infrastructure.email.service.EmailSyncService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.core.task.TaskExecutor;
+import org.springframework.scheduling.config.TaskExecutionOutcome;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClient;
@@ -21,24 +25,27 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class OAuthService {
 
 
     private final UserRepository userRepository;
     private final EmailAccountRepository emailAccountRepository;
     private final OAuth2AuthorizedClientService oAuth2AuthorizedClientService;
+    private final TokenEncryptionService tokenEncryptionService;
+    private final EmailSyncService emailSyncService;
+    private final TaskExecutor  taskExecutor;
 
 
     @Transactional
     public OAuthResult handle(Authentication authentication) {
 
-        if (!(authentication instanceof OAuth2AuthenticationToken oauthToken)) {
+        OAuth2AuthenticationToken oauthToken = (OAuth2AuthenticationToken) authentication;
 
-            return OAuthResult.linked();
-        }
         OAuth2User oauthUser = (OAuth2User) authentication.getPrincipal();
 
         String email = oauthUser != null ? oauthUser.getAttribute("email") : null;
@@ -70,10 +77,6 @@ public class OAuthService {
             return loginOrRegister(provider,providerUserId, email,name, client);
         }
 
-
-
-
-
     }
 
     private OAuthResult loginOrRegister(String provider, String providerUserId, String email, String name, OAuth2AuthorizedClient client) {
@@ -90,7 +93,18 @@ public class OAuthService {
                     return userRepository.save(newUser);
                 });
 
-        upsertEmailAccount(user, provider, email, client);
+        EmailAccount account = upsertEmailAccount(user, provider, email, client);
+        // Email Sync trigger
+
+        CompletableFuture.runAsync(()-> {
+            try {
+                int processed = emailSyncService.syncAccount(account);
+                log.info("Sync running on thread name : {}", Thread.currentThread());
+                log.info("Initial sync after signing in : {} messages processed for account {}", processed, account.getId());
+            }catch (Exception e) {
+                log.error("Initial sync failed after signing the account {}: {}", account.getId(), e.getMessage(), e);
+            }
+        }, taskExecutor);
         return OAuthResult.issueJwt(email);
     }
 
@@ -100,11 +114,20 @@ public class OAuthService {
         User user = userRepository.findByEmail(loggedInEmail)
                 .orElseThrow();
 
-        upsertEmailAccount(user, provider, email, client);
+        EmailAccount account = upsertEmailAccount(user, provider, email, client);
+        CompletableFuture.runAsync(()-> {
+            try {
+                int processed = emailSyncService.syncAccount(account);
+                log.info("Sync running on thread: {}", Thread.currentThread());
+                log.info("Initial sync after linking: {} messages processed for account {}", processed, account.getId());
+            }catch (Exception e) {
+                log.error("Initial sync failed after linking for account {}: {}", account.getId(), e.getMessage(), e);
+            }
+        }, taskExecutor);
         return OAuthResult.linked();
     }
 
-    private void upsertEmailAccount(User user, String provider, String email, OAuth2AuthorizedClient client) {
+    private EmailAccount upsertEmailAccount(User user, String provider, String email, OAuth2AuthorizedClient client) {
         Optional<EmailAccount> existing =
                 emailAccountRepository
                         .findByUserIdAndProviderAndProviderEmail(
@@ -112,22 +135,23 @@ public class OAuthService {
                                 EmailProvider.valueOf(provider),
                                 email
                         );
+        EmailAccount account;
 
-        String accessToken = client.getAccessToken().getTokenValue();
+        String accessToken = tokenEncryptionService.encrypt(client.getAccessToken().getTokenValue());
         String refreshToken = client.getRefreshToken() != null
-                ? client.getRefreshToken().getTokenValue()
+                ? tokenEncryptionService.encrypt(client.getRefreshToken().getTokenValue())
                 : null;
 
         Instant expiresAt = client.getAccessToken().getExpiresAt();
 
         // Todo:  Add token encryption before saving into db
         if (existing.isPresent()) {
-            EmailAccount account = existing.get();
+            account = existing.get();
             account.setAccessToken(accessToken);
             account.setRefreshToken(refreshToken);
             account.setExpiresAt(expiresAt);
         } else {
-            EmailAccount account = new EmailAccount();
+            account = new EmailAccount();
             account.setUser(user);
             account.setProvider(EmailProvider.valueOf(provider));
             account.setProviderEmail(email);
@@ -137,8 +161,8 @@ public class OAuthService {
             account.setConnectedAt(Instant.now());
             account.setStatus(ConnectionStatus.ACTIVE);
 
-            emailAccountRepository.save(account);
         }
+       return emailAccountRepository.save(account);
     }
 
 

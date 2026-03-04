@@ -32,7 +32,8 @@ public class EmailSyncService {
      */
 
     public int syncAccount(EmailAccount account) {
-        String provider = account.getProvider().toString();
+        String provider = account.getProvider().toString().toLowerCase();
+        log.info("{} is the provider............!!", provider.toLowerCase());
         String gatewayKey = provider + "EmailGateway";
 
         EmailGateway gateway = emailGateways.get(gatewayKey);

@@ -14,7 +14,9 @@ import java.util.UUID;
 @Entity
 @Getter
 @Setter
-@Table(name = "")
+@Table( uniqueConstraints = @UniqueConstraint(
+        columnNames = {"user_id", "provider", "provider_email"}
+))
 @NoArgsConstructor
 public class EmailAccount {
 
@@ -31,7 +33,7 @@ public class EmailAccount {
     @Column(nullable = false)
     private EmailProvider provider;           // GOOGLE, MICROSOFT, etc.
 
-    @Column(nullable = false)
+    @Column(nullable = false, name = "provider_email")
     private String providerEmail;             // the actual inbox email (e.g. user@gmail.com)
 
     @Column(length = 2048)
