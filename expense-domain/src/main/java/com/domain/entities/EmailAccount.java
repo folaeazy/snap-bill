@@ -14,7 +14,8 @@ import java.util.UUID;
 @Entity
 @Getter
 @Setter
-@Table( uniqueConstraints = @UniqueConstraint(
+@Table( indexes = {@Index( name = "idx_email_account_last_sync", columnList= "lastSyncAt") },
+        uniqueConstraints = @UniqueConstraint(
         columnNames = {"user_id", "provider", "provider_email"}
 ))
 @NoArgsConstructor
@@ -49,7 +50,7 @@ public class EmailAccount {
     private Instant lastSyncAt;
 
     @Column
-    private Instant ExpiresAt;
+    private Instant expiresAt;
 
    // status or error tracking
     @Enumerated(EnumType.STRING)

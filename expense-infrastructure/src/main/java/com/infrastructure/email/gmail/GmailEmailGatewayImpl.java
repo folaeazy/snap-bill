@@ -1,11 +1,9 @@
 package com.infrastructure.email.gmail;
 
 import com.domain.entities.EmailAccount;
+import com.domain.entities.RawEmailMessage;
 import com.domain.gateways.EmailGateway;
-import com.domain.model.EmailAttachment;
 import com.domain.model.EmailMessage;
-import com.google.api.client.auth.oauth2.Credential;
-import com.google.api.client.googleapis.auth.oauth2.GoogleCredential;
 import com.google.api.client.googleapis.auth.oauth2.GoogleRefreshTokenRequest;
 import com.google.api.client.googleapis.auth.oauth2.GoogleTokenResponse;
 import com.google.api.client.googleapis.javanet.GoogleNetHttpTransport;
@@ -20,10 +18,8 @@ import com.google.api.services.gmail.model.MessagePartHeader;
 import com.google.auth.http.HttpCredentialsAdapter;
 import com.google.auth.oauth2.AccessToken;
 import com.google.auth.oauth2.GoogleCredentials;
-import com.infrastructure.email.DTO.EmailMessageDto;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
@@ -33,6 +29,7 @@ import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
+import java.util.Optional;
 
 @Component("googleEmailGateway")
 @Slf4j
@@ -55,39 +52,67 @@ public class GmailEmailGatewayImpl  implements EmailGateway {
 
         try{
 
-            Gmail service = createGmailService(account);
-            Instant fetchSince = since != null ? since : account.getLastSyncAt();
-            if(fetchSince == null) {
-                fetchSince = Instant.now().minus(30, ChronoUnit.DAYS);
+            Gmail gmail = createGmailService(account);
+            Instant fetchSince = since != null
+                    ? since
+                    : Optional.ofNullable(account.getLastSyncAt())
+                    .orElse(Instant.now().minus(30, ChronoUnit.DAYS));
+
+            List<String> messageIds = fetchMessageIds(gmail, fetchSince);
+            if(messageIds.isEmpty()) {
+                log.info("No new Gmail message  for account {} is empty", account.getProviderEmail());
+                return List.of();
             }
 
-            long sinceSeconds = fetchSince.getEpochSecond();
-            String query = "after:" + sinceSeconds + " category:primary";
-            ListMessagesResponse response = service.users().messages()
-                    .list(USER)
-                    .setQ(query)
-                    .setMaxResults(50L)
-                    .execute();
+            log.info("Gmail metadata fetched {}  successfully for account {}",messageIds.size(), account.getProviderEmail());
 
-            List<EmailMessage> messages = new ArrayList<>();
+            // Fetch email body concurrently
+            List<EmailMessage> messages = fetchMessagesConcurrently(gmail, messageIds);
+            log.info("Fetched {} full Gmail messages for {}",
+                    messages.size(),
+                    account.getProviderEmail());
 
-            if (response.getMessages() != null) {
-                for (Message msgSummary : response.getMessages()) {
-                    Message fullMessage = service.users().messages()
-                            .get(USER, msgSummary.getId())
-                            .setFormat("full")
-                            .execute();
-
-                    messages.add(buildEmailMessage(fullMessage));
-                }
-            }
-            log.info("Gmail: fetched {} messages since {} for {}", messages.size(), fetchSince, account.getProviderEmail());
             return messages;
+
 
         }catch (Exception e) {
             log.error("Gmail fetch failed for {}: {}", account.getProviderEmail(), e.getMessage(), e);
             return List.of();
         }
+
+    }
+
+    private List<RawEmailMessage> fetchMessagesConcurrently(Gmail gmail, List<String> messageIds) {
+        if(messageIds == null || messageIds.isEmpty()) return Li
+    }
+
+    private List<String> fetchMessageIds(Gmail gmail, Instant fetchSince) throws IOException {
+        List<String> ids =  new ArrayList<>();
+        long sinceInSeconds = fetchSince.getEpochSecond();
+
+        String query = "after:" + sinceInSeconds + " category:primary";
+        String pageToken =  null;
+
+        do {
+
+            ListMessagesResponse response = gmail.users()
+                    .messages()
+                    .list(USER)
+                    .setQ(query)
+                    .setMaxResults(500L)
+                    .setPageToken(pageToken)
+                    .execute();
+
+            if(response.getMessages() != null) {
+                for(Message message : response.getMessages()) {
+                    ids.add(message.getId());
+                }
+            }
+            pageToken = response.getNextPageToken();
+        }while (pageToken != null);
+
+        log.info("Gmail returned {} message ids since {}", ids.size(), fetchSince);
+        return  ids;
 
     }
 
