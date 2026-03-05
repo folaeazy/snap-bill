@@ -7,6 +7,7 @@ import com.domain.model.EmailMessage;
 import com.google.api.client.googleapis.auth.oauth2.GoogleRefreshTokenRequest;
 import com.google.api.client.googleapis.auth.oauth2.GoogleTokenResponse;
 import com.google.api.client.googleapis.javanet.GoogleNetHttpTransport;
+import com.google.api.client.http.HttpRequestInitializer;
 import com.google.api.client.http.javanet.NetHttpTransport;
 import com.google.api.client.json.JsonFactory;
 import com.google.api.client.json.gson.GsonFactory;
@@ -18,6 +19,8 @@ import com.google.api.services.gmail.model.MessagePartHeader;
 import com.google.auth.http.HttpCredentialsAdapter;
 import com.google.auth.oauth2.AccessToken;
 import com.google.auth.oauth2.GoogleCredentials;
+import com.domain.model.EmailMessageDto;
+import com.infrastructure.email.Components.FinancialEmailDetector;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -26,16 +29,17 @@ import java.io.IOException;
 import java.security.GeneralSecurityException;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
-import java.util.ArrayList;
-import java.util.Base64;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 @Component("googleEmailGateway")
 @Slf4j
 @RequiredArgsConstructor
 public class GmailEmailGatewayImpl  implements EmailGateway {
 
+    private final FinancialEmailDetector financialEmailDetector;
     private static final String APPLICATION_NAME = "SnapBill Gmail Sync";
     private static final JsonFactory JSON_FACTORY = GsonFactory.getDefaultInstance();
     private static final String USER = "me"; // "me" = authenticated user
@@ -48,7 +52,7 @@ public class GmailEmailGatewayImpl  implements EmailGateway {
     private final String clientSecret = "";
 
     @Override
-    public List<EmailMessage> fetchNewMessages(EmailAccount account, Instant since) {
+    public List<RawEmailMessage> fetchNewMessages(EmailAccount account, Instant since) {
 
         try{
 
@@ -66,13 +70,18 @@ public class GmailEmailGatewayImpl  implements EmailGateway {
 
             log.info("Gmail metadata fetched {}  successfully for account {}",messageIds.size(), account.getProviderEmail());
 
-            // Fetch email body concurrently
-            List<EmailMessage> messages = fetchMessagesConcurrently(gmail, messageIds);
+            // Fetch email meta-data concurrently
+            List<EmailMessageDto> metaDatas = fetchMetadataConcurrently(gmail, account, messageIds);
             log.info("Fetched {} full Gmail messages for {}",
-                    messages.size(),
+                    metaDatas.size(),
                     account.getProviderEmail());
 
-            return messages;
+            // Filter financial candidates
+            List< EmailMessageDto> candidates = financialEmailDetector.filterFinancialCandidate(metaDatas);
+
+            return fetchFullMessages(gmail,candidates,account);
+
+
 
 
         }catch (Exception e) {
@@ -82,9 +91,73 @@ public class GmailEmailGatewayImpl  implements EmailGateway {
 
     }
 
-    private List<RawEmailMessage> fetchMessagesConcurrently(Gmail gmail, List<String> messageIds) {
-        if(messageIds == null || messageIds.isEmpty()) return Li
+
+
+    //===========Helper Functions==================//
+
+    private List<EmailMessageDto> fetchMetadataConcurrently(Gmail gmail, EmailAccount account, List<String> messageIds) throws GeneralSecurityException, IOException {
+        if(messageIds == null || messageIds.isEmpty()) return List.of();
+
+        List<EmailMessageDto> rawEmailMessages = Collections.synchronizedList(new ArrayList<>());
+        try {
+
+            //virtual-thread executor
+            try(ExecutorService executor = Executors.newVirtualThreadPerTaskExecutor()) {
+                List<CompletableFuture<Void>> futures = messageIds.stream()
+                        .map(id -> CompletableFuture.runAsync(()-> {
+                            try{
+                                Message messageMetadata = gmail.users().messages()
+                                        .get(USER, id)
+                                        .setFormat("metadata") //meta only
+                                        .execute();
+
+                                EmailMessageDto  raw = EmailMessageDto.builder()
+                                        .emailAccount(account)
+                                        .provider(account.getProvider())
+                                        .providerMessageId(messageMetadata.getId())
+                                        .subject(getHeader(messageMetadata, "Subject"))
+                                        .to(getHeader(messageMetadata, "To"))
+                                        .from(getHeader(messageMetadata, "From"))
+                                        .receivedDate(Instant.ofEpochMilli(messageMetadata.getInternalDate()))
+                                        .snippet(messageMetadata.getSnippet())
+                                        .build();
+
+                                rawEmailMessages.add(raw);
+                                System.out.println("Current thread name : "  + Thread.currentThread().getName());
+                            } catch (IOException e) {
+                                throw new RuntimeException(e);
+
+                            }
+                        }, executor))
+                        .toList();
+                //wait for all thread to complete
+                CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).join();
+                log.info("Fetched metadata for {} messages for account {}", rawEmailMessages.size(), account.getProviderEmail());
+                return rawEmailMessages;
+
+            }
+
+
+        }catch (Exception e) {
+            log.error(e.getMessage());
+            return List.of();
+
+        }
+
     }
+
+    @Override
+    public boolean isConnectionValid(EmailAccount account) {
+        try {
+            Gmail service = createGmailService(account);
+            service.users().labels().list(USER).execute(); // lightweight test call
+            return true;
+        } catch (Exception e) {
+            log.warn("Gmail connection invalid for {}: {}", account.getProviderEmail(), e.getMessage());
+            return false;
+        }
+    }
+
 
     private List<String> fetchMessageIds(Gmail gmail, Instant fetchSince) throws IOException {
         List<String> ids =  new ArrayList<>();
@@ -116,29 +189,83 @@ public class GmailEmailGatewayImpl  implements EmailGateway {
 
     }
 
-    @Override
-    public boolean isConnectionValid(EmailAccount account) {
-        try {
-            Gmail service = createGmailService(account);
-            service.users().labels().list(USER).execute(); // lightweight test call
-            return true;
-        } catch (Exception e) {
-            log.warn("Gmail connection invalid for {}: {}", account.getProviderEmail(), e.getMessage());
-            return false;
+
+    private List<RawEmailMessage> fetchFullMessages(Gmail gmail, List<EmailMessageDto> candidates, EmailAccount account) {
+        if(candidates.isEmpty()) return List.of();
+
+        try (ExecutorService taskExecutor = Executors.newVirtualThreadPerTaskExecutor()) {
+            List<CompletableFuture<RawEmailMessage>> futures = candidates.stream()
+                    .map(candidate ->
+                            CompletableFuture.supplyAsync(() -> {
+                                try {
+                                    Message fullMessage = gmail.users()
+                                            .messages()
+                                            .get(USER, candidate.getId())
+                                            .setFormat("full")
+                                            .execute();
+
+                                    return convertToRawEmail(account, fullMessage);
+
+                                } catch (Exception e) {
+                                    log.error(
+                                            "Failed to fetch full message {} for account {}",
+                                            candidate.getId(),
+                                            account.getProviderEmail(),
+                                            e
+                                    );
+
+                                    return null;
+                                }
+
+                            }, taskExecutor)
+                    )
+                    .toList();
+
+            return futures.stream()
+                    .map(CompletableFuture::join)
+                    .filter(Objects::nonNull)
+                    .toList();
         }
+
+
     }
+
+    private RawEmailMessage convertToRawEmail(EmailAccount account, Message message) {
+        String subject = getHeader(message, "Subject");
+        String from = getHeader(message, "From");
+
+        String snippet = message.getSnippet();
+
+        String body = extractBody(message);
+
+        List<String> attachments = extractAttachmentNames(message);
+
+        RawEmailMessage rawEmail = new RawEmailMessage();
+
+        rawEmail.setEmailAccount(account);
+        rawEmail.setProviderMessageId(message.getId());
+        rawEmail.setSubject(subject);
+        rawEmail.setFrom(from);
+        rawEmail.setSnippet(snippet);
+        rawEmail.setBody(body);
+        rawEmail.setAttachments(attachments);
+        rawEmail.setReceivedDate(
+                Instant.ofEpochMilli(message.getInternalDate())
+        );
+
+        return rawEmail;
+    }
+
 
     private Gmail createGmailService(EmailAccount account) throws GeneralSecurityException, IOException {
         // TODO: refresh token if expired (call token service)
         String accessToken = refreshAccessTokenIfNeeded(account);
 
-        GoogleCredentials credential = GoogleCredentials
-                .newBuilder()
-                .setAccessToken(new AccessToken(accessToken, null))
-                .build();
+        HttpRequestInitializer initializer = request ->
+                request.getHeaders().setAuthorization("Bearer " + accessToken);
 
         NetHttpTransport httpTransport = GoogleNetHttpTransport.newTrustedTransport();
-        return new Gmail.Builder(httpTransport,JSON_FACTORY, new HttpCredentialsAdapter(credential))
+        return new Gmail.Builder(httpTransport,JSON_FACTORY, initializer)
                 .setApplicationName(APPLICATION_NAME)
                 .build();
 

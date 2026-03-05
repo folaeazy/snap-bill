@@ -3,6 +3,7 @@ package com.domain.entities;
 import com.domain.enums.EmailProvider;
 import com.domain.enums.ProcessingStatus;
 import jakarta.persistence.*;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -17,7 +18,7 @@ import java.util.UUID;
 @Setter
 @NoArgsConstructor
 @Table(name = "raw_emails", indexes = {
-            @Index(name = "idx_email_account_received", columnList = "email_account_id, received_at"),
+            @Index(name = "idx_email_account_received", columnList = "email_account_id, received_date"),
 
             @Index(name = "idx_processing_status", columnList = "processing_status")
         },
@@ -49,10 +50,12 @@ public class RawEmailMessage {
 
     private String subject;
 
-    private String sender;
+    private String from;
 
-    @Column(name = "received_at")
-    private Instant receivedAt;
+    private String to;
+
+    @Column(name = "received_date")
+    private Instant receivedDate;
 
     @Column(length = 1000)
     private String snippet;
@@ -76,4 +79,5 @@ public class RawEmailMessage {
 
     @Column(nullable = false)
     private Instant fetchedAt = Instant.now();
+
 }

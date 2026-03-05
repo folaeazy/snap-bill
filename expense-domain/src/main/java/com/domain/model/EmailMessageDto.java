@@ -1,5 +1,7 @@
-package com.infrastructure.email.DTO;
+package com.domain.model;
 
+import com.domain.entities.EmailAccount;
+import com.domain.enums.EmailProvider;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.ToString;
@@ -12,11 +14,17 @@ import java.util.List;
 @ToString
 public class EmailMessageDto {
 
-    private String id;                  // Gmail message ID
+    private String id; // Gmail message ID
+    private EmailAccount emailAccount;
+    private EmailProvider provider;
+    private String threadId;
+    private String providerMessageId;
     private String subject;
     private String from;
+    private String to;
+    private String snippet;
     private Instant receivedDate;
     private String bodyText;            // plain text version
     private List<String> attachmentNames;
-    private String rawContent;          // full raw for AI
+
 }

@@ -2,9 +2,13 @@ package com.domain.gateways;
 
 
 import com.domain.entities.EmailAccount;
+import com.domain.entities.RawEmailMessage;
 import com.domain.exceptions.EmailGatewayException;
 import com.domain.model.EmailMessage;
+import com.domain.model.EmailMessageDto;
 
+import java.io.IOException;
+import java.security.GeneralSecurityException;
 import java.time.Instant;
 import java.util.List;
 
@@ -27,7 +31,8 @@ public interface EmailGateway {
      * @return List of raw email messages ready for processing/parsing
      * @throws EmailGatewayException if authentication fails, rate limit exceeded, network error, etc.
      */
-    List<EmailMessage> fetchNewMessages(EmailAccount account, Instant since);
+    List<RawEmailMessage> fetchNewMessages(EmailAccount account, Instant since);
+
 
     /**
      * Optional: Mark a batch of emails as processed (e.g. mark as read, archive, add label).

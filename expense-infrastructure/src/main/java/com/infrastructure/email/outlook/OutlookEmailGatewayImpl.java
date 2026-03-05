@@ -1,13 +1,17 @@
 package com.infrastructure.email.outlook;
 
 import com.domain.entities.EmailAccount;
+import com.domain.entities.RawEmailMessage;
 import com.domain.gateways.EmailGateway;
 import com.domain.model.EmailMessage;
+import com.domain.model.EmailMessageDto;
 import com.microsoft.graph.serviceclient.GraphServiceClient;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
+import java.io.IOException;
+import java.security.GeneralSecurityException;
 import java.time.Instant;
 import java.util.List;
 
@@ -21,9 +25,10 @@ public class OutlookEmailGatewayImpl implements EmailGateway {
      * @return list of email message object
      */
     @Override
-    public List<EmailMessage> fetchNewMessages(EmailAccount account, Instant since) {
+    public List<RawEmailMessage> fetchNewMessages(EmailAccount account, Instant since) {
         return List.of();
     }
+
 
     /**
      * @param account
