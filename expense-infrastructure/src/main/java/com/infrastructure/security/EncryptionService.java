@@ -1,21 +1,18 @@
-package com.expenseapp.app.service;
+package com.infrastructure.security;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import javax.crypto.Cipher;
-import javax.crypto.NoSuchPaddingException;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
-import java.nio.charset.StandardCharsets;
-import java.security.NoSuchAlgorithmException;
 import java.util.Base64;
 
 @Service
-public class TokenEncryptionService {
+public class EncryptionService {
     private final SecretKey secretKey;
 
-    public TokenEncryptionService(@Value("${app.token.secret}") String secret) {
+    public EncryptionService(@Value("${app.token.secret}") String secret) {
         byte[] keyBytes = Base64.getDecoder().decode(secret);
         this.secretKey = new SecretKeySpec( keyBytes ,"AES");
     }

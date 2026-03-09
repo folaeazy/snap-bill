@@ -7,6 +7,8 @@ app :
   token:
     secret: 3XbWzL8Wv3pF5m2qYcN7uQkR1tV6hJdP4sE9aTz0bYw=
 
+
+
 spring:
   application:
     name: snap bill-engine

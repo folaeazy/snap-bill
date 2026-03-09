@@ -45,7 +45,7 @@ public class RawEmailMessage {
     private String threadId;
 
     // Gmail message ID (used for deduplication)
-    @Column(name = "provider_message_id", nullable = false)
+    @Column(name = "provider_message_id", nullable = false, unique = true)
     private String providerMessageId;
 
     private String subject;

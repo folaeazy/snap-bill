@@ -3,9 +3,6 @@ package com.infrastructure.email.gmail;
 import com.domain.entities.EmailAccount;
 import com.domain.entities.RawEmailMessage;
 import com.domain.gateways.EmailGateway;
-import com.domain.model.EmailMessage;
-import com.google.api.client.googleapis.auth.oauth2.GoogleRefreshTokenRequest;
-import com.google.api.client.googleapis.auth.oauth2.GoogleTokenResponse;
 import com.google.api.client.googleapis.javanet.GoogleNetHttpTransport;
 import com.google.api.client.http.HttpRequestInitializer;
 import com.google.api.client.http.javanet.NetHttpTransport;
@@ -16,11 +13,9 @@ import com.google.api.services.gmail.model.ListMessagesResponse;
 import com.google.api.services.gmail.model.Message;
 import com.google.api.services.gmail.model.MessagePart;
 import com.google.api.services.gmail.model.MessagePartHeader;
-import com.google.auth.http.HttpCredentialsAdapter;
-import com.google.auth.oauth2.AccessToken;
-import com.google.auth.oauth2.GoogleCredentials;
 import com.domain.model.EmailMessageDto;
 import com.infrastructure.email.Components.FinancialEmailDetector;
+import com.infrastructure.security.TokenService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -40,6 +35,7 @@ import java.util.concurrent.Executors;
 public class GmailEmailGatewayImpl  implements EmailGateway {
 
     private final FinancialEmailDetector financialEmailDetector;
+    private final TokenService tokenService;
     private static final String APPLICATION_NAME = "SnapBill Gmail Sync";
     private static final JsonFactory JSON_FACTORY = GsonFactory.getDefaultInstance();
     private static final String USER = "me"; // "me" = authenticated user
@@ -47,9 +43,7 @@ public class GmailEmailGatewayImpl  implements EmailGateway {
     // TODO: inject from config or secrets
 
 
-    private final String clientId = "";
 
-    private final String clientSecret = "";
 
     @Override
     public List<RawEmailMessage> fetchNewMessages(EmailAccount account, Instant since) {
@@ -68,16 +62,12 @@ public class GmailEmailGatewayImpl  implements EmailGateway {
                 return List.of();
             }
 
-            log.info("Gmail metadata fetched {}  successfully for account {}",messageIds.size(), account.getProviderEmail());
-
             // Fetch email meta-data concurrently
-            List<EmailMessageDto> metaDatas = fetchMetadataConcurrently(gmail, account, messageIds);
-            log.info("Fetched {} full Gmail messages for {}",
-                    metaDatas.size(),
-                    account.getProviderEmail());
+            List<EmailMessageDto> metaData = fetchMetadataConcurrently(gmail, account, messageIds);
+
 
             // Filter financial candidates
-            List< EmailMessageDto> candidates = financialEmailDetector.filterFinancialCandidate(metaDatas);
+            List< EmailMessageDto> candidates = financialEmailDetector.filterFinancialCandidate(metaData);
 
             return fetchFullMessages(gmail,candidates,account);
 
@@ -112,6 +102,7 @@ public class GmailEmailGatewayImpl  implements EmailGateway {
                                         .execute();
 
                                 EmailMessageDto  raw = EmailMessageDto.builder()
+                                        .id(messageMetadata.getId())
                                         .emailAccount(account)
                                         .provider(account.getProvider())
                                         .providerMessageId(messageMetadata.getId())
@@ -258,8 +249,8 @@ public class GmailEmailGatewayImpl  implements EmailGateway {
 
 
     private Gmail createGmailService(EmailAccount account) throws GeneralSecurityException, IOException {
-        // TODO: refresh token if expired (call token service)
-        String accessToken = refreshAccessTokenIfNeeded(account);
+
+        String accessToken = tokenService.getValidAccessToken(account);
 
         HttpRequestInitializer initializer = request ->
                 request.getHeaders().setAuthorization("Bearer " + accessToken);
@@ -271,53 +262,9 @@ public class GmailEmailGatewayImpl  implements EmailGateway {
 
     }
 
-    private String refreshAccessTokenIfNeeded(EmailAccount account) throws IOException, GeneralSecurityException {
-        if (account.getExpiresAt() == null || Instant.now().isBefore(account.getExpiresAt())) {
-            return account.getAccessToken();
-        }
 
-        // Real refresh
-        GoogleTokenResponse tokenResponse = new GoogleRefreshTokenRequest(
-                GoogleNetHttpTransport.newTrustedTransport(),
-                GsonFactory.getDefaultInstance(),
-                account.getRefreshToken(),
-                clientId,
-                clientSecret
-        ).execute();
 
-        String newToken = tokenResponse.getAccessToken();
-        account.setAccessToken(newToken);
-        account.setExpiresAt(Instant.now().plusSeconds(tokenResponse.getExpiresInSeconds()));
 
-        if (tokenResponse.getRefreshToken() != null) {
-            account.setRefreshToken(tokenResponse.getRefreshToken());
-        }
-
-        // TODO: save updated account via EmailAccountRepository
-        // emailAccountRepository.save(account);
-
-        log.info("Refreshed Gmail access token for {}", account.getProviderEmail());
-        return newToken;
-    }
-
-    private EmailMessage buildEmailMessage(Message message) {
-        String subject = getHeader(message, "Subject");
-        String from = getHeader(message, "From");
-        Instant date = Instant.ofEpochMilli(message.getInternalDate());
-        String body = extractBody(message);
-        List<String> attachments = extractAttachmentNames(message);
-
-        return EmailMessage.builder()
-                .id(message.getId())
-                .subject(subject)
-                .from(from)
-                .receivedDate(date)
-                .bodyText(body)
-                .attachments(attachments)
-                .rawContent(message.toString())
-                .build();
-
-    }
 
     private List<String> extractAttachmentNames(Message message) {
         List<String> names = new ArrayList<>();

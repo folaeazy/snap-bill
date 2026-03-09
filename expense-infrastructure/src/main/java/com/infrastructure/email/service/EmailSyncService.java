@@ -2,8 +2,11 @@ package com.infrastructure.email.service;
 
 
 import com.domain.entities.EmailAccount;
+import com.domain.entities.RawEmailMessage;
 import com.domain.gateways.EmailGateway;
 import com.domain.model.EmailMessage;
+import com.domain.repositories.EmailAccountRepository;
+import com.domain.repositories.RawEmailRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -23,6 +26,8 @@ public class EmailSyncService {
      * Keys are bean names like "gmailEmailGateway", "outlookEmailGateway".
      */
     private final Map<String, EmailGateway> emailGateways;
+    private final RawEmailRepository rawEmailRepository;
+    private final EmailAccountRepository emailAccountRepository;
 
     /**
      * Sync one email account (called by scheduler or manual trigger).
@@ -44,42 +49,33 @@ public class EmailSyncService {
 
         // Determine starting point for fetch
         Instant since = account.getLastSyncAt();
-        if (since == null) {
-            // First sync: last 30 days (adjust as needed)
-            since = Instant.now().minus(30, java.time.temporal.ChronoUnit.DAYS);
-            log.info("First sync for {} - fetching from {}", account.getProviderEmail(), since);
-        }
+
+        log.info("First sync for {} - fetching from {}", account.getProviderEmail(), since);
+
         try {
             // Fetch new messages since last sync
-            List<EmailMessage> messages = gateway.fetchNewMessages(account, since);
-
-            int savedCount = 0;
-
-            for (EmailMessage msg : messages) {
-                // TODO: quick pre-filter here (optional, to skip obvious junk)
-                // e.g. if (!isLikelyTransaction(msg)) continue;
-
-                // Classify & extract (placeholder – real impl next)
-                // ParsedExpense parsed = aiClassificationService.classifyAndExtract(msg);
-                // if (parsed != null && parsed.isValidExpense()) {
-                //     expenseService.createExpenseFromParsed(parsed);
-                //     savedCount++;
-                // }
-
-                // For now: just log
-                log.debug("Processed message: {} from {}", msg.getSubject(), msg.getFrom());
-                savedCount++; // temp counter
+            List<RawEmailMessage> messages = gateway.fetchNewMessages(account, since);
+            if(messages.isEmpty()){
+                log.info("No new messages for {}", account.getProviderEmail());
+                return 0;
             }
 
-            // If at least one message processed successfully → update checkpoint
-            if (!messages.isEmpty()) {
-                account.setLastSyncAt(Instant.now());
-                // TODO: save account via EmailAccountRepository
-                // emailAccountRepository.save(account);
-                log.info("Updated lastSyncAt for {} to {}", account.getProviderEmail(), account.getLastSyncAt());
-            }
+            //save raw emails for processing
+            rawEmailRepository.save(messages);
 
-            return savedCount;
+            Instant newestEmail = messages.stream()
+                    .map(RawEmailMessage::getReceivedDate)
+                    .max(Instant::compareTo)
+                    .orElse(Instant.now());
+
+            account.setLastSyncAt(newestEmail);
+
+            emailAccountRepository.save(account);
+
+
+            // TODO: Store + process
+            log.info("Updated lastSyncAt for {} to {}", account.getProviderEmail(), account.getLastSyncAt());
+            return messages.size();
 
         }catch (Exception e) {
             log.error("Sync failed for {}: {}", account.getProviderEmail(), e.getMessage(), e);

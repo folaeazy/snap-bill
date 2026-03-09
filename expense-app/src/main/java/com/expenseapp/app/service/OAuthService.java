@@ -8,12 +8,11 @@ import com.domain.enums.EmailProvider;
 import com.domain.repositories.EmailAccountRepository;
 import com.domain.repositories.UserRepository;
 import com.expenseapp.app.dto.OAuthResult;
-import com.expenseapp.app.util.JwtUtils;
 import com.infrastructure.email.service.EmailSyncService;
+import com.infrastructure.security.EncryptionService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.task.TaskExecutor;
-import org.springframework.scheduling.config.TaskExecutionOutcome;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClient;
@@ -36,7 +35,7 @@ public class OAuthService {
     private final UserRepository userRepository;
     private final EmailAccountRepository emailAccountRepository;
     private final OAuth2AuthorizedClientService oAuth2AuthorizedClientService;
-    private final TokenEncryptionService tokenEncryptionService;
+    private final EncryptionService tokenEncryptionService;
     private final EmailSyncService emailSyncService;
     private final TaskExecutor  taskExecutor;
 

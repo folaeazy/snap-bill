@@ -34,7 +34,7 @@ public class FinancialEmailDetector {
     );
 
     public List<EmailMessageDto> filterFinancialCandidate (List<EmailMessageDto> messages) {
-        messages.stream()
+        return messages.stream()
                 .filter(this::looksFinancial)
                 .toList();
     }
