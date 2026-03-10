@@ -43,7 +43,7 @@ public class FinancialEmailDetector {
 
         String subject = safe(emailMessageDto.getSubject());
         String snippet = safe(emailMessageDto.getSnippet());
-        String from = safe(emailMessageDto.getFrom());
+        String from = safe(emailMessageDto.getSender());
 
         String combined = (subject + " " + snippet).toLowerCase();
 

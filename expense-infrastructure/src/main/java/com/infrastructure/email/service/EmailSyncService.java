@@ -4,9 +4,9 @@ package com.infrastructure.email.service;
 import com.domain.entities.EmailAccount;
 import com.domain.entities.RawEmailMessage;
 import com.domain.gateways.EmailGateway;
-import com.domain.model.EmailMessage;
 import com.domain.repositories.EmailAccountRepository;
 import com.domain.repositories.RawEmailRepository;
+import com.infrastructure.persistence.repositories.SpringDataRawEmailRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -29,6 +29,8 @@ public class EmailSyncService {
     private final RawEmailRepository rawEmailRepository;
     private final EmailAccountRepository emailAccountRepository;
 
+
+
     /**
      * Sync one email account (called by scheduler or manual trigger).
      *
@@ -38,7 +40,6 @@ public class EmailSyncService {
 
     public int syncAccount(EmailAccount account) {
         String provider = account.getProvider().toString().toLowerCase();
-        log.info("{} is the provider............!!", provider.toLowerCase());
         String gatewayKey = provider + "EmailGateway";
 
         EmailGateway gateway = emailGateways.get(gatewayKey);
@@ -60,8 +61,12 @@ public class EmailSyncService {
                 return 0;
             }
 
+            log.info("Messages class: {}", messages.getClass());
+            log.info("First message class: {}", messages.getFirst().getClass());
+
             //save raw emails for processing
-            rawEmailRepository.save(messages);
+            rawEmailRepository.saveAllMessages(messages);
+
 
             Instant newestEmail = messages.stream()
                     .map(RawEmailMessage::getReceivedDate)

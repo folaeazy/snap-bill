@@ -68,21 +68,6 @@ public class OAuth2AuthenticationSuccessHandler implements AuthenticationSuccess
             response.sendRedirect("http://localhost:3000/dashboard?linked=true");
         }
 
-
-
-
-
-
-
-
-
-
-
-            // Redirect to frontend with JWT (or set cookie)
-
-
-
     }
-
 
 }

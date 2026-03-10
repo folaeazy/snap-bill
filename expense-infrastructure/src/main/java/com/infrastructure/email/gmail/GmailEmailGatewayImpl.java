@@ -108,13 +108,13 @@ public class GmailEmailGatewayImpl  implements EmailGateway {
                                         .providerMessageId(messageMetadata.getId())
                                         .subject(getHeader(messageMetadata, "Subject"))
                                         .to(getHeader(messageMetadata, "To"))
-                                        .from(getHeader(messageMetadata, "From"))
+                                        .sender(getHeader(messageMetadata, "From"))
                                         .receivedDate(Instant.ofEpochMilli(messageMetadata.getInternalDate()))
                                         .snippet(messageMetadata.getSnippet())
                                         .build();
 
                                 rawEmailMessages.add(raw);
-                                System.out.println("Current thread name : "  + Thread.currentThread().getName());
+                                System.out.println("Current thread name : "  + Thread.currentThread());
                             } catch (IOException e) {
                                 throw new RuntimeException(e);
 

@@ -4,6 +4,7 @@ package com.domain.repositories;
 import com.domain.entities.EmailAccount;
 import com.domain.entities.User;
 import com.domain.enums.AuthProvider;
+import com.domain.enums.ConnectionStatus;
 import com.domain.enums.EmailProvider;
 
 import java.util.List;
@@ -42,5 +43,5 @@ public interface EmailAccountRepository {
     /**
      * Find accounts that need syncing (e.g. status ACTIVE and lastSyncAt older than threshold).
      */
-    //List<EmailAccount> findSyncableAccounts();
+    List<EmailAccount> findByStatus(ConnectionStatus status);
 }

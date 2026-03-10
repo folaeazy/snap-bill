@@ -11,6 +11,6 @@ import java.util.UUID;
  * This is the concrete persistence adapter.
  */
 @Repository
-public interface SpringDataUserRepository extends JpaRepository<User, UUID>, UserRepository{
+public interface SpringDataUserRepository extends JpaRepository<User, UUID>, UserRepository {
     // The domain interface methods are automatically implemented by Spring Data JPA
 }

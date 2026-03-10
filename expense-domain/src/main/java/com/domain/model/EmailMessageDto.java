@@ -3,6 +3,7 @@ package com.domain.model;
 import com.domain.entities.EmailAccount;
 import com.domain.enums.EmailProvider;
 import lombok.Builder;
+import lombok.Data;
 import lombok.Getter;
 import lombok.ToString;
 
@@ -20,7 +21,7 @@ public class EmailMessageDto {
     private String threadId;
     private String providerMessageId;
     private String subject;
-    private String from;
+    private String sender;
     private String to;
     private String snippet;
     private Instant receivedDate;
