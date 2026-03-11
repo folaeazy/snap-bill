@@ -7,6 +7,7 @@ import com.domain.enums.AuthProvider;
 import com.domain.enums.ConnectionStatus;
 import com.domain.enums.EmailProvider;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -44,4 +45,13 @@ public interface EmailAccountRepository {
      * Find accounts that need syncing (e.g. status ACTIVE and lastSyncAt older than threshold).
      */
     List<EmailAccount> findByStatus(ConnectionStatus status);
+
+
+    /**
+     * Find all active accounts whose lastSyncAt is before the given threshold
+     * Ordered by oldest lastSyncAt first
+     */
+    List<EmailAccount> findByStatusAndLastSyncAtBeforeOrderByLastSyncAtAsc(
+            ConnectionStatus status, Instant lastSyncAtThreshold
+    );
 }

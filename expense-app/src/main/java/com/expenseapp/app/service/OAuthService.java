@@ -10,8 +10,10 @@ import com.domain.repositories.UserRepository;
 import com.expenseapp.app.dto.OAuthResult;
 import com.infrastructure.email.service.EmailSyncService;
 import com.infrastructure.security.EncryptionService;
+import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.core.task.TaskExecutor;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -27,17 +29,34 @@ import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
 @Service
-@RequiredArgsConstructor
 @Slf4j
 public class OAuthService {
 
 
+    @Qualifier("applicationTaskExecutor")
+    private final TaskExecutor  taskExecutor;
     private final UserRepository userRepository;
     private final EmailAccountRepository emailAccountRepository;
     private final OAuth2AuthorizedClientService oAuth2AuthorizedClientService;
     private final EncryptionService tokenEncryptionService;
     private final EmailSyncService emailSyncService;
-    private final TaskExecutor  taskExecutor;
+
+    public OAuthService(
+            @Qualifier("applicationTaskExecutor")
+            TaskExecutor taskExecutor,
+            UserRepository userRepository,
+            EmailAccountRepository emailAccountRepository,
+            OAuth2AuthorizedClientService oAuth2AuthorizedClientService,
+            EncryptionService tokenEncryptionService,
+            EmailSyncService emailSyncService
+    ) {
+        this.taskExecutor = taskExecutor;
+        this.userRepository = userRepository;
+        this.emailAccountRepository = emailAccountRepository;
+        this.oAuth2AuthorizedClientService = oAuth2AuthorizedClientService;
+        this.tokenEncryptionService = tokenEncryptionService;
+        this.emailSyncService = emailSyncService;
+    }
 
 
     @Transactional
@@ -140,6 +159,7 @@ public class OAuthService {
         String refreshToken = client.getRefreshToken() != null
                 ? tokenEncryptionService.encrypt(client.getRefreshToken().getTokenValue())
                 : null;
+        System.out.printf("This is the REFRESH TOKEN FROM LOGIN %s", refreshToken);
 
         Instant expiresAt = client.getAccessToken().getExpiresAt();
 

@@ -50,8 +50,9 @@ public class RawEmailMessage {
 
     private String subject;
 
-    private String from;
+    private String sender;
 
+    @Column(name = "recipient")
     private String to;
 
     @Column(name = "received_date")

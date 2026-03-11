@@ -3,6 +3,7 @@ package com.infrastructure.email.gmail;
 import com.domain.entities.EmailAccount;
 import com.domain.entities.RawEmailMessage;
 import com.domain.gateways.EmailGateway;
+import com.domain.model.ProviderMessage;
 import com.google.api.client.googleapis.javanet.GoogleNetHttpTransport;
 import com.google.api.client.http.HttpRequestInitializer;
 import com.google.api.client.http.javanet.NetHttpTransport;
@@ -15,6 +16,7 @@ import com.google.api.services.gmail.model.MessagePart;
 import com.google.api.services.gmail.model.MessagePartHeader;
 import com.domain.model.EmailMessageDto;
 import com.infrastructure.email.Components.FinancialEmailDetector;
+import com.infrastructure.interfaces.EmailBodyExtractor;
 import com.infrastructure.security.TokenService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -28,6 +30,7 @@ import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicInteger;
 
 @Component("googleEmailGateway")
 @Slf4j
@@ -35,6 +38,7 @@ import java.util.concurrent.Executors;
 public class GmailEmailGatewayImpl  implements EmailGateway {
 
     private final FinancialEmailDetector financialEmailDetector;
+    private final EmailBodyExtractor emailBodyExtractor;
     private final TokenService tokenService;
     private static final String APPLICATION_NAME = "SnapBill Gmail Sync";
     private static final JsonFactory JSON_FACTORY = GsonFactory.getDefaultInstance();
@@ -89,6 +93,7 @@ public class GmailEmailGatewayImpl  implements EmailGateway {
         if(messageIds == null || messageIds.isEmpty()) return List.of();
 
         List<EmailMessageDto> rawEmailMessages = Collections.synchronizedList(new ArrayList<>());
+        AtomicInteger i = new AtomicInteger(0);
         try {
 
             //virtual-thread executor
@@ -114,7 +119,7 @@ public class GmailEmailGatewayImpl  implements EmailGateway {
                                         .build();
 
                                 rawEmailMessages.add(raw);
-                                System.out.println("Current thread name : "  + Thread.currentThread());
+                                System.out.println("Current thread name : "  + Thread.currentThread() + " " + i.incrementAndGet());
                             } catch (IOException e) {
                                 throw new RuntimeException(e);
 
@@ -223,11 +228,12 @@ public class GmailEmailGatewayImpl  implements EmailGateway {
 
     private RawEmailMessage convertToRawEmail(EmailAccount account, Message message) {
         String subject = getHeader(message, "Subject");
-        String from = getHeader(message, "From");
+        String sender = getHeader(message, "From");
 
         String snippet = message.getSnippet();
 
-        String body = extractBody(message);
+        String body = emailBodyExtractor.extractPlainText(message);
+        String bodyHtml = emailBodyExtractor.extractHtmlBody(message);
 
         List<String> attachments = extractAttachmentNames(message);
 
@@ -236,9 +242,13 @@ public class GmailEmailGatewayImpl  implements EmailGateway {
         rawEmail.setEmailAccount(account);
         rawEmail.setProviderMessageId(message.getId());
         rawEmail.setSubject(subject);
-        rawEmail.setFrom(from);
+        rawEmail.setSender(sender);
+        rawEmail.setProvider(account.getProvider());
+        rawEmail.setTo("me");
         rawEmail.setSnippet(snippet);
         rawEmail.setBody(body);
+        rawEmail.setBodyHtml(bodyHtml);
+        rawEmail.setThreadId(message.getThreadId());
         rawEmail.setAttachments(attachments);
         rawEmail.setReceivedDate(
                 Instant.ofEpochMilli(message.getInternalDate())

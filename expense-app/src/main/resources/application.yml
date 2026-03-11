@@ -6,7 +6,12 @@ baseUrl : http://localhost:8080
 app :
   token:
     secret: 3XbWzL8Wv3pF5m2qYcN7uQkR1tV6hJdP4sE9aTz0bYw=
-
+# For testing (every 2 minutes)
+snapbill :
+    sync :
+      cron: 0 */1 * * * *
+# For production (every 6 hours)
+#snapbill.sync.cron=0 0 */6 * * *
 
 
 spring:

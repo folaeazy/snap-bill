@@ -20,6 +20,7 @@ public class TokenService {
 
     public  String getValidAccessToken(EmailAccount account) {
         String accessToken = encryptionService.decrypt(account.getAccessToken());
+
         if (account.getExpiresAt() != null &&
                 Instant.now().isBefore(account.getExpiresAt().minusSeconds(60))) {
 
@@ -32,7 +33,6 @@ public class TokenService {
 
     public String refreshToken(EmailAccount account) {
         String refreshToken = encryptionService.decrypt(account.getRefreshToken());
-
         TokenRefresher tokenRefresher = tokenRefreshFactory.getRefresher(account.getProvider());
         TokenRefreshResult result = tokenRefresher.refresh(refreshToken);
 
