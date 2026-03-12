@@ -20,29 +20,11 @@ public interface AiGateway  {
     /**
      * Extract expenses from a single email message.
      *
-     * @param message Raw email content (subject, body text, attachment text, etc.)
+     * @param emailText Raw email content (subject, body text, attachment text, etc.)
      * @return ExtractionResult containing parsed expenses + confidence + metadata
      * @throws AiGatewayException if the AI call fails (rate limit, timeout, invalid response, etc.)
      */
-    ExtractionResult extractExpenses(EmailMessage message);
+    ExtractionResult extractExpenses(String emailText);
 
 
-    /**
-     * Batch extraction — useful when processing many emails in one sync.
-     *
-     * May be more efficient (fewer separate calls, better context).
-     *
-     * @param messages List of raw email messages
-     * @return List of extraction results (one per message)
-     */
-    List<ExtractionResult> extractExpensesBatch(List<EmailMessage> messages);
-
-
-    /**
-     * Optional: Check health/status of the AI provider.
-     * Useful for monitoring, circuit breaking, or fallback to rule-based parsing.
-     */
-//    default AiStatus getProviderStatus() {
-//        return AiStatus.HEALTHY; // default optimistic implementation
-//    }
 }
