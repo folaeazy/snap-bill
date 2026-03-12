@@ -61,8 +61,6 @@ public class EmailSyncService {
                 return 0;
             }
 
-            log.info("Messages class: {}", messages.getClass());
-            log.info("First message class: {}", messages.getFirst().getClass());
 
             //save raw emails for processing
             rawEmailRepository.saveAllMessages(messages);
@@ -73,7 +71,7 @@ public class EmailSyncService {
                     .max(Instant::compareTo)
                     .orElse(Instant.now());
 
-            account.setLastSyncAt(newestEmail);
+            account.setLastEmailReceivedAt(newestEmail);
 
             emailAccountRepository.save(account);
 

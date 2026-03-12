@@ -2,6 +2,7 @@ package com.expenseapp.app.config;
 
 import com.expenseapp.app.exceptions.CustomAccessDenyHandler;
 import com.expenseapp.app.exceptions.CustomAuthEntryHandler;
+import com.expenseapp.app.security.CustomAuthorizationRequestResolver;
 import com.expenseapp.app.security.JwtAuthenticationFilter;
 import com.expenseapp.app.security.OAuth2AuthenticationFailureHandler;
 import com.expenseapp.app.security.OAuth2AuthenticationSuccessHandler;
@@ -16,6 +17,7 @@ import org.springframework.security.config.annotation.web.configurers.AbstractHt
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
@@ -29,6 +31,7 @@ public class SecurityConfig {
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
     private final OAuth2AuthenticationSuccessHandler oAuth2AuthenticationSuccessHandler;
     private final OAuth2AuthenticationFailureHandler oAuth2AuthenticationFailureHandler;
+    private final ClientRegistrationRepository clientRegistrationRepository;
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception{
@@ -40,6 +43,10 @@ public class SecurityConfig {
                 ).permitAll()
                         .anyRequest().authenticated())
                 .oauth2Login(oauth2-> oauth2
+                        .authorizationEndpoint(endpoint->
+                                endpoint.authorizationRequestResolver(new CustomAuthorizationRequestResolver(
+                                        clientRegistrationRepository, "/oauth2/authorization"
+                                )))
                         .successHandler(oAuth2AuthenticationSuccessHandler)
                         .failureHandler(oAuth2AuthenticationFailureHandler)
                 )

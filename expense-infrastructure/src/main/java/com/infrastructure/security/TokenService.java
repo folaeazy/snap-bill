@@ -37,7 +37,10 @@ public class TokenService {
         TokenRefreshResult result = tokenRefresher.refresh(refreshToken);
 
         account.setAccessToken(encryptionService.encrypt(result.getAccessToken()));
-        account.setRefreshToken(encryptionService.encrypt(result.getRefreshToken()));
+        if (result.getRefreshToken() != null) {
+            account.setRefreshToken(encryptionService.encrypt(result.getRefreshToken()));
+        }
+
         account.setExpiresAt(result.getExpiresAt());
         emailAccountRepository.save(account);
 

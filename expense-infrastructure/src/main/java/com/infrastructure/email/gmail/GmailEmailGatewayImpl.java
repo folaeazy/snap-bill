@@ -57,7 +57,7 @@ public class GmailEmailGatewayImpl  implements EmailGateway {
             Gmail gmail = createGmailService(account);
             Instant fetchSince = since != null
                     ? since
-                    : Optional.ofNullable(account.getLastSyncAt())
+                    : Optional.ofNullable(account.getLastEmailReceivedAt())
                     .orElse(Instant.now().minus(30, ChronoUnit.DAYS));
 
             List<String> messageIds = fetchMessageIds(gmail, fetchSince);

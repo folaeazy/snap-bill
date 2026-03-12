@@ -50,6 +50,9 @@ public class EmailAccount {
     private Instant lastSyncAt;
 
     @Column
+    private Instant lastEmailReceivedAt;
+
+    @Column
     private Instant expiresAt;
 
    // status or error tracking

@@ -153,12 +153,16 @@ public class OAuthService {
                                 EmailProvider.valueOf(provider),
                                 email
                         );
+        String existingRefreshToken = "";
+        if(existing.isPresent() && existing.get().getRefreshToken() != null){
+            existingRefreshToken = existing.get().getRefreshToken();
+        }
         EmailAccount account;
 
         String accessToken = tokenEncryptionService.encrypt(client.getAccessToken().getTokenValue());
         String refreshToken = client.getRefreshToken() != null
                 ? tokenEncryptionService.encrypt(client.getRefreshToken().getTokenValue())
-                : null;
+                : existingRefreshToken ;
         System.out.printf("This is the REFRESH TOKEN FROM LOGIN %s", refreshToken);
 
         Instant expiresAt = client.getAccessToken().getExpiresAt();

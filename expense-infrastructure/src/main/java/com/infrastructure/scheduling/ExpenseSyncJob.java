@@ -39,7 +39,7 @@ public class ExpenseSyncJob {
             Instant threshold = Instant.now().minusSeconds(syncThresholdSeconds);
 
             // only account that haven't sync recently
-            List<EmailAccount> accounts = emailAccountRepository.findByStatusAndLastSyncAtBeforeOrderByLastSyncAtAsc(ConnectionStatus.ACTIVE, threshold);
+            List<EmailAccount> accounts = emailAccountRepository.findAccountsToSync(ConnectionStatus.ACTIVE, threshold);
 
             if(accounts.isEmpty()) {
                 log.error("No active accounts need syncing right now.");
@@ -47,6 +47,7 @@ public class ExpenseSyncJob {
             }
 
             for(EmailAccount account : accounts) {
+                account.setLastSyncAt(Instant.now());
                 Thread.ofVirtual().start(() -> syncAccountSafe(account));
             }
         }catch (Exception e) {

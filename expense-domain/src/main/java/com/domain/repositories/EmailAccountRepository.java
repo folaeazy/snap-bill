@@ -54,4 +54,9 @@ public interface EmailAccountRepository {
     List<EmailAccount> findByStatusAndLastSyncAtBeforeOrderByLastSyncAtAsc(
             ConnectionStatus status, Instant lastSyncAtThreshold
     );
+
+
+    List<EmailAccount> findAccountsToSync(ConnectionStatus status, Instant threshold);
+
+
 }
