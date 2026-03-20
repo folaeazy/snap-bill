@@ -12,6 +12,9 @@ snapbill :
       cron: 0 */1 * * * *
 # For production (every 6 hours)
 #snapbill.sync.cron=0 0 */6 * * *
+    llm :
+      api-key :
+
 
 
 spring:

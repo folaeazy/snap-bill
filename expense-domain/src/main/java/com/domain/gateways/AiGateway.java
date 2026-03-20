@@ -20,11 +20,11 @@ public interface AiGateway  {
     /**
      * Extract expenses from a single email message.
      *
-     * @param emailText Raw email content (subject, body text, attachment text, etc.)
+     * @param prompt prompt for llm for extraction result
      * @return ExtractionResult containing parsed expenses + confidence + metadata
      * @throws AiGatewayException if the AI call fails (rate limit, timeout, invalid response, etc.)
      */
-    ExtractionResult extractExpenses(String emailText);
+    ExtractionResult extractExpenses(String prompt);
 
 
 }

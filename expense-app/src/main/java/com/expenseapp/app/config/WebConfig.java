@@ -19,4 +19,5 @@ public class WebConfig {
         mapper.configure(MapperFeature.ACCEPT_CASE_INSENSITIVE_PROPERTIES, true);
         return mapper;
     }
+
 }
