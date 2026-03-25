@@ -24,11 +24,15 @@ public class ExpenseExtractionService {
     private final AiGateway aiGateway;
     private final ExtractionValidator validator;
     private final TransactionFactory transactionFactory;
+    private final TextCleaner textCleaner;
 
     public Optional<Transaction> extract(RawEmailMessage email) {
 
+        //clean text
+        String cleanedEmail = textCleaner.clean(email);
+
         // build prompt
-        String prompt = promptBuilder.build(email.getSubject(), email.getBody());
+        String prompt = promptBuilder.build(cleanedEmail);
 
         // Ai extraction
         ExtractionResult result = aiGateway.extractExpenses(prompt);

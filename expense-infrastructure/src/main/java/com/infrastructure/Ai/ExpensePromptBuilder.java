@@ -5,15 +5,14 @@ import org.springframework.stereotype.Component;
 @Component
 public class ExpensePromptBuilder {
 
-    public String build(String subject, String body) {
-
+    public String build(String cleanedText) {
         return """
-        You are a financial data extraction system.
-
-        Extract transaction details from the email below.
-
-        Return ONLY valid JSON.
-
+        You are a financial transaction extraction system.
+    
+        Extract structured transaction data from the email text below.
+    
+        Return ONLY valid JSON. Do not include explanations.
+    
         Schema:
         {
           "transaction": boolean,
@@ -23,20 +22,21 @@ public class ExpensePromptBuilder {
           "category": string,
           "transactionDate": string (ISO-8601)
         }
-
+    
         Rules:
         - If no financial transaction exists → transaction = false
-        - Do NOT guess values
-        - Currency must be like USD, NGN, EUR
-        - Amount must be a number only
-
-        Email:
+        - Do NOT guess missing values
+        - Amount must be a positive number (no currency symbols)
+        - Currency must be a 3-letter code (e.g., NGN, USD, EUR)
+        - Merchant should be the business name (e.g., Netflix, Amazon)
+        - Category should be a simple word (e.g., food, transport, shopping, subscription)
+        - transactionDate must be ISO-8601 format (e.g., 2026-03-25T10:15:30Z)
+    
+        Email Text:
         ---
-        Subject: %s
-
-        Body:
         %s
         ---
-        """.formatted(subject, body);
+        """.formatted(cleanedText);
+
     }
 }

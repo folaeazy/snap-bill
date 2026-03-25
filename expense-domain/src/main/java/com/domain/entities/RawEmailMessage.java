@@ -81,4 +81,7 @@ public class RawEmailMessage {
     @Column(nullable = false)
     private Instant fetchedAt = Instant.now();
 
+    @Column
+    private String failureReason;
+
 }

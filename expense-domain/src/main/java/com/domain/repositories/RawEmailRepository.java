@@ -2,6 +2,7 @@ package com.domain.repositories;
 
 import com.domain.entities.EmailAccount;
 import com.domain.entities.RawEmailMessage;
+import com.domain.enums.ProcessingStatus;
 
 import java.util.List;
 import java.util.Optional;
@@ -26,6 +27,7 @@ public interface RawEmailRepository {
     Optional<RawEmailMessage> findById(UUID id);
 
     List<RawEmailMessage> findByEmailAccount(EmailAccount emailAccount);
+    List<RawEmailMessage> findTop50ByProcessedOrderByReceivedDateAsc(ProcessingStatus status);
 
     // Additional methods if needed (e.g. deleteByEmailAccount)
     void deleteByEmailAccount(EmailAccount emailAccount);

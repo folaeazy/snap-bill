@@ -9,6 +9,8 @@ import com.domain.repositories.EmailAccountRepository;
 import com.domain.repositories.UserRepository;
 import com.expenseapp.app.dto.OAuthResult;
 import com.infrastructure.email.service.EmailSyncService;
+import com.infrastructure.email.service.ExpenseExtractionService;
+import com.infrastructure.scheduling.ExpenseExtractionJob;
 import com.infrastructure.security.EncryptionService;
 import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
@@ -40,6 +42,7 @@ public class OAuthService {
     private final OAuth2AuthorizedClientService oAuth2AuthorizedClientService;
     private final EncryptionService tokenEncryptionService;
     private final EmailSyncService emailSyncService;
+    private final ExpenseExtractionJob expenseExtractionJob;
 
     public OAuthService(
             @Qualifier("applicationTaskExecutor")
@@ -48,7 +51,8 @@ public class OAuthService {
             EmailAccountRepository emailAccountRepository,
             OAuth2AuthorizedClientService oAuth2AuthorizedClientService,
             EncryptionService tokenEncryptionService,
-            EmailSyncService emailSyncService
+            EmailSyncService emailSyncService,
+            ExpenseExtractionJob expenseExtractionJob
     ) {
         this.taskExecutor = taskExecutor;
         this.userRepository = userRepository;
@@ -56,6 +60,8 @@ public class OAuthService {
         this.oAuth2AuthorizedClientService = oAuth2AuthorizedClientService;
         this.tokenEncryptionService = tokenEncryptionService;
         this.emailSyncService = emailSyncService;
+        this.expenseExtractionJob = expenseExtractionJob;
+
     }
 
 
@@ -114,15 +120,22 @@ public class OAuthService {
         EmailAccount account = upsertEmailAccount(user, provider, email, client);
         // Email Sync trigger
 
-        CompletableFuture.runAsync(()-> {
-            try {
-                int processed = emailSyncService.syncAccount(account);
-                log.info("Sync running on thread name : {}", Thread.currentThread());
-                log.info("Initial sync after signing in : {} messages processed for account {}", processed, account.getId());
-            }catch (Exception e) {
-                log.error("Initial sync failed after signing the account {}: {}", account.getId(), e.getMessage(), e);
-            }
-        }, taskExecutor);
+        CompletableFuture
+                .supplyAsync(()-> emailSyncService.syncAccount(account), taskExecutor)
+                .thenApply(processed -> {
+                    log.info("Sync done on thread name : {}", Thread.currentThread());
+                    return processed;
+                })
+                .thenCompose(processed -> {
+                    if(processed > 0) {
+                        return CompletableFuture.runAsync(expenseExtractionJob::processPendingEmails, taskExecutor);
+                    }
+                    return CompletableFuture.completedFuture(null);
+                })
+                .exceptionally(ex -> {
+                    log.error("Pipeline failed for account {}", account.getId(), ex);
+                    return null;
+                });
         return OAuthResult.issueJwt(email);
     }
 
@@ -133,15 +146,22 @@ public class OAuthService {
                 .orElseThrow();
 
         EmailAccount account = upsertEmailAccount(user, provider, email, client);
-        CompletableFuture.runAsync(()-> {
-            try {
-                int processed = emailSyncService.syncAccount(account);
-                log.info("Sync running on thread: {}", Thread.currentThread());
-                log.info("Initial sync after linking: {} messages processed for account {}", processed, account.getId());
-            }catch (Exception e) {
-                log.error("Initial sync failed after linking for account {}: {}", account.getId(), e.getMessage(), e);
-            }
-        }, taskExecutor);
+        CompletableFuture
+                .supplyAsync(()-> emailSyncService.syncAccount(account), taskExecutor)
+                .thenApply(processed -> {
+                    log.info("Sync done during email linking on thread name : {}", Thread.currentThread());
+                    return processed;
+                })
+                .thenCompose(processed -> {
+                    if(processed > 0) {
+                        return CompletableFuture.runAsync(expenseExtractionJob::processPendingEmails, taskExecutor);
+                    }
+                    return CompletableFuture.completedFuture(null);
+                })
+                .exceptionally(ex -> {
+                    log.error("Pipeline failed for account {}", account.getId(), ex);
+                    return null;
+                });
         return OAuthResult.linked();
     }
 
