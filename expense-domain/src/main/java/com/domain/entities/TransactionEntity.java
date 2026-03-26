@@ -20,7 +20,7 @@ import java.util.UUID;
 @Getter
 @Setter
 @NoArgsConstructor
-public class Expense {
+public class TransactionEntity {
 
     @Id
     @GeneratedValue
@@ -42,10 +42,10 @@ public class Expense {
     private Instant transactionDateTime;   // optional full timestamp
 
     @Column
-    private String merchantName;
+    private String merchant;
 
     @Column
-    private String categoryName;
+    private String category;
 
     @ElementCollection
     @CollectionTable(name = "transaction_tags", joinColumns = @JoinColumn(name = "transaction_id"))
@@ -94,4 +94,7 @@ public class Expense {
     protected void onUpdate() {
         updatedAt = Instant.now();
     }
+
+    @Column(name = "raw_email_id")
+    private UUID rawEmailId;
 }

@@ -16,7 +16,7 @@ import java.time.Instant;
 public class GoogleTokenRefresher implements TokenRefresher {
 
 
-    private final String clientId = " ";
+    private final String clientId = "";
 
 
     private final String clientSecret = "";

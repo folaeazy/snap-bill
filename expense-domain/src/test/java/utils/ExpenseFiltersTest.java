@@ -1,6 +1,6 @@
 package utils;
 
-import com.domain.entities.Transaction;
+import com.domain.domain.Transaction;
 import com.domain.utils.ExpenseFilters;
 
 import com.domain.valueObjects.CurrencyCode;

@@ -1,6 +1,6 @@
 package entities;
 
-import com.domain.entities.Transaction;
+import com.domain.domain.Transaction;
 import com.domain.valueObjects.CurrencyCode;
 import com.domain.enums.TransactionSource;
 import com.domain.enums.TransactionType;

@@ -1,7 +1,7 @@
 package com.infrastructure.email.service;
 
 import com.domain.entities.RawEmailMessage;
-import com.domain.entities.Transaction;
+import com.domain.domain.Transaction;
 import com.domain.gateways.AiGateway;
 import com.domain.model.ExtractionResult;
 import com.domain.model.ValidationResult;

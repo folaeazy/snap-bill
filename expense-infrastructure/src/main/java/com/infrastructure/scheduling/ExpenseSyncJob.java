@@ -30,7 +30,7 @@ public class ExpenseSyncJob {
     @Value("${snapbill.sync.cron}")
     private String cronExpression;
 
-    @Scheduled(cron = "${snapbill.sync.cron}")
+    //@Scheduled(cron = "${snapbill.sync.cron}")
     public void run() {
         log.info("Starting ExpenseSyncJob at {}", Instant.now());
 

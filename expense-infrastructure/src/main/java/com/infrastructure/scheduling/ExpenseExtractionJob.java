@@ -1,13 +1,14 @@
 package com.infrastructure.scheduling;
 
 import com.domain.entities.RawEmailMessage;
-import com.domain.entities.Transaction;
+import com.domain.domain.Transaction;
 import com.domain.enums.ProcessingStatus;
 import com.domain.repositories.RawEmailRepository;
 import com.domain.repositories.TransactionRepository;
 import com.infrastructure.email.service.ExpenseExtractionService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -29,6 +30,7 @@ public class ExpenseExtractionJob {
 
     // Scheduler Entry point
 
+    @Scheduled(fixedRate = 2 * 60 * 1000) //2 minute for testing
     public void runScheduled() {
         log.info("Started scheduled extraction");
         processPendingEmails();
@@ -55,7 +57,8 @@ public class ExpenseExtractionJob {
                     .map(email -> executor.submit(() -> {
                         try{
                             semaphore.acquire();
-                            processEmailSafely(email);
+                            processEmail(email);
+                            System.out.println(Thread.currentThread());
                         }catch (InterruptedException e){
                             Thread.currentThread().interrupt();
                         }finally {
@@ -76,14 +79,14 @@ public class ExpenseExtractionJob {
         }
     }
 
-    private void processEmailSafely(RawEmailMessage email) {
-        try {
-            processEmail(email);
-        } catch (Exception e) {
-            log.error("Failed processing email {}", email.getId(), e);
-        }
-
-    }
+//    private void processEmailSafely(RawEmailMessage email) {
+//        try {
+//            processEmail(email);
+//        } catch (Exception e) {
+//            log.error("Failed processing email {}", email.getId(), e);
+//        }
+//
+//    }
 
 
     //CORe Logic
@@ -95,6 +98,7 @@ public class ExpenseExtractionJob {
             Optional<Transaction> txOpt =
                     expenseExtractionService.extract(email);
 
+            log.info("Optionally logging after extracting email from AI........");
             if (txOpt.isPresent()) {
 
                 transactionRepository.save(txOpt.get());

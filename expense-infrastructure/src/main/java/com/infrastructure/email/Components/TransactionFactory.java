@@ -1,6 +1,6 @@
 package com.infrastructure.email.Components;
 
-import com.domain.entities.Transaction;
+import com.domain.domain.Transaction;
 import com.domain.enums.TransactionSource;
 import com.domain.enums.TransactionType;
 import com.domain.model.ExtractionResult;

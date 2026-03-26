@@ -27,7 +27,7 @@ public class GroqAiGateway implements AiGateway {
     @Override
     public ExtractionResult extractExpenses(String prompt) {
         GroqRequest request = new GroqRequest(
-                "llama3-70b-8192",
+                "llama-3.3-70b-versatile",
                 List.of(new GroqMessage("user", prompt)),
                 0.0,
                 Map.of("type", "json_object")

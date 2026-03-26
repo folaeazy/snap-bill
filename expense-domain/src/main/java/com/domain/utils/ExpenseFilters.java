@@ -2,7 +2,7 @@ package com.domain.utils;
 
 
 
-import com.domain.entities.Transaction;
+import com.domain.domain.Transaction;
 import com.domain.enums.TransactionType;
 import com.domain.valueObjects.Category;
 import com.domain.valueObjects.Description;
