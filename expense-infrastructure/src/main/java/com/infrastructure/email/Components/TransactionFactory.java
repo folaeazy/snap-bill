@@ -9,7 +9,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
+import java.time.Instant;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Set;
 
 @Component
@@ -24,17 +26,19 @@ public class TransactionFactory {
 
         TransactionType type = transactionTypeResolver.resolve(result);
         Category category = categoryTypeResolver.resolve(result.category());
+        Instant llmInstant = Instant.parse(result.transactionDate());
+
 
         return Transaction.create(
                 type,
                 money,
-                TransactionDate.of(LocalDate.from(result.transaction_date())),
+                TransactionDate.of(llmInstant),
                 Merchant.of(result.merchant()),
                 category,
                 Set.of(),
                 null,
                 Description.of("This is a Ai extracted"),
-                TransactionSource.EMAIL_GMAIL,
+                TransactionSource.EMAIL_GMAIL, // TODO: might be extended in the future
                 BigDecimal.valueOf(0.9)
 
         );

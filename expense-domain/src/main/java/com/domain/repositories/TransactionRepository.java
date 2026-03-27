@@ -1,6 +1,5 @@
 package com.domain.repositories;
 
-import com.domain.domain.Transaction;
 import com.domain.entities.TransactionEntity;
 import com.domain.enums.TransactionType;
 
@@ -10,7 +9,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 public interface TransactionRepository {
-    void save(Transaction transaction);
+
 
     /**
      * Save or update an expense.
@@ -40,7 +39,7 @@ public interface TransactionRepository {
     /**
      * Optional: find by merchant name (for recurring detection or search).
      */
-    List<TransactionEntity> findByUserIdAndMerchantNameContaining(UUID userId, String merchantName);
+    List<TransactionEntity> findByUserIdAndMerchantContaining(UUID userId, String merchantName);
 
     /**
      * Count expenses in a period (for quick summaries without loading full list).

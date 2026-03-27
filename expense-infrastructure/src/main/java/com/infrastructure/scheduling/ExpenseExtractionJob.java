@@ -1,15 +1,20 @@
 package com.infrastructure.scheduling;
 
+import com.domain.entities.EmailAccount;
 import com.domain.entities.RawEmailMessage;
 import com.domain.domain.Transaction;
+import com.domain.entities.TransactionEntity;
+import com.domain.entities.User;
 import com.domain.enums.ProcessingStatus;
 import com.domain.repositories.RawEmailRepository;
 import com.domain.repositories.TransactionRepository;
 import com.infrastructure.email.service.ExpenseExtractionService;
+import com.infrastructure.mapper.TransactionMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
@@ -25,6 +30,7 @@ public class ExpenseExtractionJob {
     private final RawEmailRepository rawEmailRepository;
     private final ExpenseExtractionService expenseExtractionService;
     private final TransactionRepository transactionRepository;
+    private final TransactionMapper transactionMapper;
 
     private static final int MAX_CONCURRENT_TASK = 10;  // limit cause of API rate limit
 
@@ -37,6 +43,7 @@ public class ExpenseExtractionJob {
     }
 
     //REUSABLE FOR SCHEDULER AND ON LOGIN/SIGNUP
+    @Transactional
     public void processPendingEmails() {
         List<RawEmailMessage> emails = rawEmailRepository.findTop50ByProcessedOrderByReceivedDateAsc(ProcessingStatus.PENDING);
 
@@ -79,17 +86,10 @@ public class ExpenseExtractionJob {
         }
     }
 
-//    private void processEmailSafely(RawEmailMessage email) {
-//        try {
-//            processEmail(email);
-//        } catch (Exception e) {
-//            log.error("Failed processing email {}", email.getId(), e);
-//        }
-//
-//    }
 
 
     //CORe Logic
+
     private void processEmail(RawEmailMessage email) {
         try{
             email.setProcessed(ProcessingStatus.PROCESSING);
@@ -97,11 +97,16 @@ public class ExpenseExtractionJob {
 
             Optional<Transaction> txOpt =
                     expenseExtractionService.extract(email);
+            // get user and email account
+            EmailAccount emailAccount = email.getEmailAccount();
+            User user = emailAccount.getUser();
 
-            log.info("Optionally logging after extracting email from AI........");
+
             if (txOpt.isPresent()) {
-
-                transactionRepository.save(txOpt.get());
+                log.info("Optionally logging after extracting email from AI........");
+                // Map to transaction Entity
+                TransactionEntity entity = transactionMapper.toEntity(user, emailAccount, txOpt.get());
+                transactionRepository.save(entity);
 
                 email.setProcessed(ProcessingStatus.PROCESSED);
                 email.setFailureReason(null);

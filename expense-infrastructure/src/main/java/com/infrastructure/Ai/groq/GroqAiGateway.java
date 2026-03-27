@@ -64,7 +64,7 @@ public class GroqAiGateway implements AiGateway {
         try {
             return objectMapper.readValue(content, ExtractionResult.class);
         } catch (Exception e) {
-            log.warn("Failed to parse LLM JSON: {}", content);
+            log.warn("Failed to parse LLM JSON: {}",  e.getMessage());
 
             return new ExtractionResult(null, null, null, null, null, false);
         }

@@ -31,6 +31,7 @@ public class ExpenseExtractionService {
         //clean text
         String cleanedEmail = textCleaner.clean(email);
 
+
         // build prompt
         String prompt = promptBuilder.build(cleanedEmail);
 

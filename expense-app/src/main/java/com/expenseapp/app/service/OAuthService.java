@@ -183,11 +183,12 @@ public class OAuthService {
         String refreshToken = client.getRefreshToken() != null
                 ? tokenEncryptionService.encrypt(client.getRefreshToken().getTokenValue())
                 : existingRefreshToken ;
+        // Todo:  Remove later
         System.out.printf("This is the REFRESH TOKEN FROM LOGIN %s", refreshToken);
 
         Instant expiresAt = client.getAccessToken().getExpiresAt();
 
-        // Todo:  Add token encryption before saving into db
+
         if (existing.isPresent()) {
             account = existing.get();
             account.setAccessToken(accessToken);

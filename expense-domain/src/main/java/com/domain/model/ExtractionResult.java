@@ -10,7 +10,7 @@ public record ExtractionResult(
         BigDecimal amount,
         CurrencyCode currency,
         String category,
-        Instant transaction_date,
+        String transactionDate,
         boolean transaction
 
 ) { }

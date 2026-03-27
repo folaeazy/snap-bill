@@ -16,7 +16,7 @@ import java.util.Set;
 import java.util.UUID;
 
 @Entity
-@Table(name = "expenses")
+@Table(name = "transactions")
 @Getter
 @Setter
 @NoArgsConstructor
@@ -31,6 +31,10 @@ public class TransactionEntity {
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "email_account_id", nullable = false)
+    private EmailAccount emailAccount;
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private TransactionType type;
@@ -40,6 +44,9 @@ public class TransactionEntity {
 
     @Column
     private Instant transactionDateTime;   // optional full timestamp
+
+    @Column
+    private String originalZone;
 
     @Column
     private String merchant;
@@ -95,6 +102,6 @@ public class TransactionEntity {
         updatedAt = Instant.now();
     }
 
-    @Column(name = "raw_email_id")
-    private UUID rawEmailId;
+//    @Column(name = "raw_email_id")
+//    private UUID rawEmailId;
 }
