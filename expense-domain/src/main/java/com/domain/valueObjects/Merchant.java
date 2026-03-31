@@ -10,7 +10,7 @@ public final class Merchant {
     private final String name;
     private final String normalizedName; // e.g. "Spotify" instead of "SPOTIFY INC PAYPAL"
 
-    public Merchant(String name, String normalizedName) {
+    private Merchant(String name, String normalizedName) {
         this.name = Objects.requireNonNull(name, "Merchant name cannot be null").trim();
         this.normalizedName = normalizedName != null ? normalizedName.trim() : this.name;
     }
