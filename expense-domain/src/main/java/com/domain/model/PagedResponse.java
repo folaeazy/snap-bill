@@ -1,4 +1,4 @@
-package com.expenseapp.app.dto.expense.response;
+package com.domain.model;
 
 import java.util.List;
 

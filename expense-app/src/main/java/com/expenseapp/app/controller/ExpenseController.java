@@ -1,15 +1,14 @@
 package com.expenseapp.app.controller;
 
 import com.expenseapp.app.dto.expense.request.CreateExpenseRequest;
-import com.expenseapp.app.dto.expense.request.ExpenseRequestQuery;
+import com.domain.model.ExpenseRequestQuery;
 import com.expenseapp.app.dto.expense.request.UpdateExpenseRequest;
 import com.expenseapp.app.dto.expense.response.ExpenseResponse;
-import com.expenseapp.app.dto.expense.response.PagedResponse;
+import com.domain.model.PagedResponse;
 import com.expenseapp.app.dto.response.ApiResponse;
 import com.expenseapp.app.interfaces.ExpenseService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;

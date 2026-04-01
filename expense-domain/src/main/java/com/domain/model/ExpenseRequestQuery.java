@@ -1,4 +1,4 @@
-package com.expenseapp.app.dto.expense.request;
+package com.domain.model;
 
 import lombok.Builder;
 

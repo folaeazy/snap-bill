@@ -1,10 +1,10 @@
 package com.expenseapp.app.service;
 
 import com.expenseapp.app.dto.expense.request.CreateExpenseRequest;
-import com.expenseapp.app.dto.expense.request.ExpenseRequestQuery;
+import com.domain.model.ExpenseRequestQuery;
 import com.expenseapp.app.dto.expense.request.UpdateExpenseRequest;
 import com.expenseapp.app.dto.expense.response.ExpenseResponse;
-import com.expenseapp.app.dto.expense.response.PagedResponse;
+import com.domain.model.PagedResponse;
 import com.expenseapp.app.dto.response.ApiResponse;
 import com.expenseapp.app.interfaces.ExpenseService;
 import org.springframework.stereotype.Service;

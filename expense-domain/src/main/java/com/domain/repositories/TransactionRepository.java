@@ -2,6 +2,8 @@ package com.domain.repositories;
 
 import com.domain.entities.TransactionEntity;
 import com.domain.enums.TransactionType;
+import com.domain.model.ExpenseRequestQuery;
+import com.domain.model.PagedResponse;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -20,6 +22,11 @@ public interface TransactionRepository {
      * Find by internal ID.
      */
     Optional<TransactionEntity> findById(UUID id);
+
+    /**
+     *  Find All with Specification filter.
+     */
+    PagedResponse<TransactionEntity> findAll(ExpenseRequestQuery query);
 
     /**
      * Find all expenses for a user within a date range.
