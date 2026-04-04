@@ -3,6 +3,7 @@ package com.infrastructure.persistence.repositories;
 import com.domain.entities.TransactionEntity;
 import com.domain.repositories.TransactionRepository;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.stereotype.Repository;
 
 import java.util.UUID;
@@ -13,6 +14,7 @@ import java.util.UUID;
  */
 
 @Repository
-public interface SpringDataTransactionRepository extends JpaRepository<TransactionEntity, UUID>, TransactionRepository {
+public interface SpringDataTransactionRepository extends
+        JpaRepository<TransactionEntity, UUID>, JpaSpecificationExecutor<TransactionEntity> {
     // The domain interface methods are automatically implemented by Spring Data JPA
 }

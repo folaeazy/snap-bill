@@ -9,7 +9,7 @@ import com.domain.enums.ProcessingStatus;
 import com.domain.repositories.RawEmailRepository;
 import com.domain.repositories.TransactionRepository;
 import com.infrastructure.email.service.ExpenseExtractionService;
-import com.infrastructure.mapper.TransactionMapper;
+import com.infrastructure.mapper.EntityMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -30,7 +30,7 @@ public class ExpenseExtractionJob {
     private final RawEmailRepository rawEmailRepository;
     private final ExpenseExtractionService expenseExtractionService;
     private final TransactionRepository transactionRepository;
-    private final TransactionMapper transactionMapper;
+    private final EntityMapper entityMapper;
 
     private static final int MAX_CONCURRENT_TASK = 10;  // limit cause of API rate limit
 
@@ -105,7 +105,7 @@ public class ExpenseExtractionJob {
             if (txOpt.isPresent()) {
                 log.info("Optionally logging after extracting email from AI........");
                 // Map to transaction Entity
-                TransactionEntity entity = transactionMapper.toEntity(user, emailAccount, txOpt.get());
+                TransactionEntity entity = entityMapper.toEntity(user, emailAccount, txOpt.get());
                 transactionRepository.save(entity);
 
                 email.setProcessed(ProcessingStatus.PROCESSED);

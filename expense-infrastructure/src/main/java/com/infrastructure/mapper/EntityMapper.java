@@ -7,11 +7,8 @@ import com.domain.entities.TransactionEntity;
 import com.domain.entities.User;
 import org.springframework.stereotype.Component;
 
-import java.time.Instant;
-import java.util.Optional;
-
 @Component
-public class TransactionMapper {
+public class EntityMapper {
 
     public TransactionEntity toEntity(User user, EmailAccount emailAccount, Transaction tx) {
 
@@ -31,7 +28,10 @@ public class TransactionMapper {
 
         return entity;
     }
+
 }
+
+
 
 
 

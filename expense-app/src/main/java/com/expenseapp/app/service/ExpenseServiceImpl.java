@@ -1,5 +1,8 @@
 package com.expenseapp.app.service;
 
+import com.domain.entities.TransactionEntity;
+import com.domain.entities.User;
+import com.domain.repositories.TransactionRepository;
 import com.expenseapp.app.dto.expense.request.CreateExpenseRequest;
 import com.domain.model.ExpenseRequestQuery;
 import com.expenseapp.app.dto.expense.request.UpdateExpenseRequest;
@@ -7,20 +10,47 @@ import com.expenseapp.app.dto.expense.response.ExpenseResponse;
 import com.domain.model.PagedResponse;
 import com.expenseapp.app.dto.response.ApiResponse;
 import com.expenseapp.app.interfaces.ExpenseService;
+import com.expenseapp.app.mapper.TransactionMapper;
+import com.expenseapp.app.security.AuthenticatedUser;
+import lombok.RequiredArgsConstructor;
+import org.jetbrains.annotations.NotNull;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.UUID;
 
 @Service
+@RequiredArgsConstructor
 public class ExpenseServiceImpl implements ExpenseService {
+
+    private final TransactionRepository transactionRepository;
+    private final TransactionMapper transactionMapper;
     /**
-     * @param requestQuery
-     * @return
+     * @param request for filters
+     * @return paged response
      */
     @Override
-    public PagedResponse<ExpenseResponse> getExpenses(ExpenseRequestQuery requestQuery) {
-        return null;
+    public PagedResponse<ExpenseResponse> getExpenses(ExpenseRequestQuery request) {
+        ExpenseRequestQuery query = getExpenseRequestQuery(request);
+        PagedResponse<TransactionEntity> result = transactionRepository.findAll(query);
+        List<ExpenseResponse> responses = result.content().stream()
+                .map(transactionMapper::toResponse)
+                .toList();
+
+        return new PagedResponse<>(
+                responses,
+                result.page(),
+                result.size(),
+                result.totalElements(),
+                result.totalPages(),
+                result.last()
+        );
+
     }
+
+
 
     /**
      * @param expenseRequest
@@ -57,5 +87,38 @@ public class ExpenseServiceImpl implements ExpenseService {
     @Override
     public ApiResponse<ExpenseResponse> getExpense(UUID expenseId) {
         return null;
+    }
+
+
+
+
+    //============Helper method-===================//
+    private User getCurrentUser() {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth == null || !(auth.getPrincipal() instanceof AuthenticatedUser au)) {
+            throw new IllegalStateException("User not authenticated");
+        }
+        return au.getUser();
+    }
+
+
+    @NotNull
+    private ExpenseRequestQuery getExpenseRequestQuery(ExpenseRequestQuery request) {
+        UUID userId = getCurrentUser().getId();
+        return new ExpenseRequestQuery(
+                userId,
+                request.emailAccountIds(),
+                request.startDate(),
+                request.endDate(),
+                request.categories(),
+                request.merchant(),
+                request.minAmount(),
+                request.maxAmount(),
+                request.search(),
+                request.page(),
+                request.size(),
+                request.sortBy(),
+                request.sortDirection()
+        );
     }
 }

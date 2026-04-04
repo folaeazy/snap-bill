@@ -9,6 +9,8 @@ import java.util.UUID;
 
 @Builder
 public record ExpenseRequestQuery(
+        UUID userId ,
+
         List<UUID> emailAccountIds,
 
         LocalDate startDate,
