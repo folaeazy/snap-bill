@@ -1,7 +1,7 @@
 package com.expenseapp.app;
 
 
-import com.infrastructure.persistence.config.PersistenceConfig;
+import com.infrastructure.persistence.config.InfraComponentScanConfig;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.persistence.autoconfigure.EntityScan;
@@ -12,7 +12,7 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 @SpringBootApplication
 @EntityScan(basePackages = "com.domain")
 @EnableJpaRepositories(basePackages = "com.infrastructure")
-@Import(PersistenceConfig.class)
+@Import(InfraComponentScanConfig.class)
 @EnableScheduling
 public class SnapBillApplication {
 

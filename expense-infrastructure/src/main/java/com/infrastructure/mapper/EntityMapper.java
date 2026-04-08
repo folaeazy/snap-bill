@@ -21,7 +21,7 @@ public class EntityMapper {
         entity.setSource(tx.getSource());
         entity.setTransactionDateTime(tx.getDate().getDateTime());
         entity.setTransactionDate(tx.getDate().getDate());
-        entity.setOriginalZone(tx.getDate().getZone() != null ? tx.getDate().getZone().getId() : null);
+        entity.setOriginalZone(tx.getDate().toZonedDateTime() != null ? String.valueOf(tx.getDate().toZonedDateTime()) : null);
         entity.setAiConfidence(tx.getAiConfidence());
         entity.setUser(user);
         entity.setEmailAccount(emailAccount);

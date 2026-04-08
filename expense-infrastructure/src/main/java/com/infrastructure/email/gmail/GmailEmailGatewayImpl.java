@@ -3,7 +3,6 @@ package com.infrastructure.email.gmail;
 import com.domain.entities.EmailAccount;
 import com.domain.entities.RawEmailMessage;
 import com.domain.gateways.EmailGateway;
-import com.domain.model.ProviderMessage;
 import com.google.api.client.googleapis.javanet.GoogleNetHttpTransport;
 import com.google.api.client.http.HttpRequestInitializer;
 import com.google.api.client.http.javanet.NetHttpTransport;
@@ -17,6 +16,7 @@ import com.google.api.services.gmail.model.MessagePartHeader;
 import com.domain.model.EmailMessageDto;
 import com.infrastructure.email.Components.FinancialEmailDetector;
 import com.infrastructure.interfaces.EmailBodyExtractor;
+
 import com.infrastructure.security.TokenService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

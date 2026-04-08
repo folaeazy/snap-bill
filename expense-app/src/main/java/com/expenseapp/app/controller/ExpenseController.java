@@ -1,5 +1,6 @@
 package com.expenseapp.app.controller;
 
+import com.domain.entities.User;
 import com.expenseapp.app.dto.expense.request.CreateExpenseRequest;
 import com.domain.model.ExpenseRequestQuery;
 import com.expenseapp.app.dto.expense.request.UpdateExpenseRequest;
@@ -7,10 +8,13 @@ import com.expenseapp.app.dto.expense.response.ExpenseResponse;
 import com.domain.model.PagedResponse;
 import com.expenseapp.app.dto.response.ApiResponse;
 import com.expenseapp.app.interfaces.ExpenseService;
+import com.expenseapp.app.security.AuthenticatedUser;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.Instant;
@@ -25,8 +29,8 @@ public class ExpenseController {
 
     @GetMapping("/")
     public ResponseEntity<ApiResponse<PagedResponse<ExpenseResponse>>> getExpenses(@Valid @ModelAttribute ExpenseRequestQuery requestQuery) {
-
-        var result =  expenseService.getExpenses(requestQuery);
+        UUID userId =  UUID.fromString("395045ce-4920-45f8-bd34-507955e08f14");//getCurrentUser().getId();
+        var result =  expenseService.getExpenses(requestQuery, userId);
         PagedResponse<ExpenseResponse> pagedResponse = new PagedResponse<>(
                 result.content(),
                 result.page(),
@@ -94,5 +98,15 @@ public class ExpenseController {
             .build();
         return ResponseEntity.ok(response);
 
+    }
+
+
+    //============Helper method-===================//
+    private User getCurrentUser() {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth == null || !(auth.getPrincipal() instanceof AuthenticatedUser au)) {
+            throw new IllegalStateException("User not authenticated");
+        }
+        return au.getUser();
     }
 }

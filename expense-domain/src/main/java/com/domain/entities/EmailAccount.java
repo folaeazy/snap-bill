@@ -62,4 +62,5 @@ public class EmailAccount {
      //:last error message if sync failed
     @Column(length = 1000)
     private String lastErrorMessage;
+
 }

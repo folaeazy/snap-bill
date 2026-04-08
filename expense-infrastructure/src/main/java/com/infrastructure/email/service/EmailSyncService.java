@@ -74,9 +74,6 @@ public class EmailSyncService {
             account.setLastEmailReceivedAt(newestEmail);
 
             emailAccountRepository.save(account);
-
-
-            // TODO: Store + process
             log.info("Updated lastSyncAt for {} to {}", account.getProviderEmail(), account.getLastSyncAt());
             return messages.size();
 

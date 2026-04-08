@@ -10,7 +10,7 @@ import java.util.UUID;
 
 public interface ExpenseService {
 
-    PagedResponse<ExpenseResponse> getExpenses(ExpenseRequestQuery requestQuery);
+    PagedResponse<ExpenseResponse> getExpenses(ExpenseRequestQuery requestQuery, UUID userId);
     ExpenseResponse createManualExpense(CreateExpenseRequest expenseRequest);
     ExpenseResponse updateExpense(UUID id ,UpdateExpenseRequest updateExpenseRequest);
     Void deleteExpense(UUID expenseId);

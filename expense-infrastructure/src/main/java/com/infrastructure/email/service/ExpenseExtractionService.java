@@ -37,15 +37,20 @@ public class ExpenseExtractionService {
 
         // Ai extraction
         ExtractionResult result = aiGateway.extractExpenses(prompt);
+        //Validate result
         ValidationResult validation = validator.validate(result);
         if (!validation.valid()) {
             log.warn("Validation failed for email {}: {}",
                     email.getId(), validation.reason());
             return Optional.empty();
         }
+        log.info("logging result from llm.....////,,,,,,,,,,,,,,");
+        log.info("{}", result);
+
 
         // build transaction
         Transaction tx = transactionFactory.fromExtraction(result);
+        log.info("{}", tx);
         return Optional.of(tx);
 
     }

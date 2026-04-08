@@ -32,8 +32,8 @@ public class ExpenseServiceImpl implements ExpenseService {
      * @return paged response
      */
     @Override
-    public PagedResponse<ExpenseResponse> getExpenses(ExpenseRequestQuery request) {
-        ExpenseRequestQuery query = getExpenseRequestQuery(request);
+    public PagedResponse<ExpenseResponse> getExpenses(ExpenseRequestQuery request, UUID userId) {
+        ExpenseRequestQuery query = getExpenseRequestQuery(request, userId);
         PagedResponse<TransactionEntity> result = transactionRepository.findAll(query);
         List<ExpenseResponse> responses = result.content().stream()
                 .map(transactionMapper::toResponse)
@@ -92,19 +92,11 @@ public class ExpenseServiceImpl implements ExpenseService {
 
 
 
-    //============Helper method-===================//
-    private User getCurrentUser() {
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        if (auth == null || !(auth.getPrincipal() instanceof AuthenticatedUser au)) {
-            throw new IllegalStateException("User not authenticated");
-        }
-        return au.getUser();
-    }
+
 
 
     @NotNull
-    private ExpenseRequestQuery getExpenseRequestQuery(ExpenseRequestQuery request) {
-        UUID userId = getCurrentUser().getId();
+    private ExpenseRequestQuery getExpenseRequestQuery(ExpenseRequestQuery request,UUID userId) {
         return new ExpenseRequestQuery(
                 userId,
                 request.emailAccountIds(),
