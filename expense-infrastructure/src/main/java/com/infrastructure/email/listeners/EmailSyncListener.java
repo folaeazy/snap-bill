@@ -27,7 +27,7 @@ public class EmailSyncListener {
 
     @EventListener
     public void handle(EmailSyncRequested event) {
-        pipelineExecutor.submit(() -> {
+        pipelineExecutor.execute(() -> {
             try {
                 log.info("Email sync request event publish received ......");
                 log.info("Starting now...............................");

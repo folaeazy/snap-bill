@@ -30,7 +30,9 @@ import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Semaphore;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Supplier;
 
 @Component("googleEmailGateway")
 @Slf4j
@@ -40,11 +42,14 @@ public class GmailEmailGatewayImpl  implements EmailGateway {
     private final FinancialEmailDetector financialEmailDetector;
     private final EmailBodyExtractor emailBodyExtractor;
     private final TokenService tokenService;
+    private final ExecutorService pipelineExecutor;
     private static final String APPLICATION_NAME = "SnapBill Gmail Sync";
     private static final JsonFactory JSON_FACTORY = GsonFactory.getDefaultInstance();
-    private static final String USER = "me"; // "me" = authenticated user
+    private static final String USER = "me";// "me" = authenticated user
 
-    // TODO: inject from config or secrets
+    private static final int MAX_CONCURRENT_CALL = 12;
+    private static final int BATCH_SIZE = 20;
+    private static final int RETRY_ATTEMPTS = 3;
 
 
 
@@ -67,16 +72,13 @@ public class GmailEmailGatewayImpl  implements EmailGateway {
             }
 
             // Fetch email meta-data concurrently
-            List<EmailMessageDto> metaData = fetchMetadataConcurrently(gmail, account, messageIds);
+            List<EmailMessageDto> metaData = fetchMetadataInBatches(gmail, account, messageIds);
 
 
             // Filter financial candidates
             List< EmailMessageDto> candidates = financialEmailDetector.filterFinancialCandidate(metaData);
 
-            return fetchFullMessages(gmail,candidates,account);
-
-
-
+            return fetchFullMessagesInBatches(gmail,candidates,account);
 
         }catch (Exception e) {
             log.error("Gmail fetch failed for {}: {}", account.getProviderEmail(), e.getMessage(), e);
@@ -89,58 +91,81 @@ public class GmailEmailGatewayImpl  implements EmailGateway {
 
     //===========Helper Functions==================//
 
-    private List<EmailMessageDto> fetchMetadataConcurrently(Gmail gmail, EmailAccount account, List<String> messageIds) throws GeneralSecurityException, IOException {
-        if(messageIds == null || messageIds.isEmpty()) return List.of();
+    /**
+     *  GMAIL  METADATA
+     * Fetches gmail meta-data in batches
+     */
 
-        List<EmailMessageDto> rawEmailMessages = Collections.synchronizedList(new ArrayList<>());
+    private List<EmailMessageDto> fetchMetadataInBatches(Gmail gmail, EmailAccount account, List<String> messageIds) throws GeneralSecurityException, IOException {
+        if (messageIds == null || messageIds.isEmpty()) return List.of();
+
+        List<EmailMessageDto> results = Collections.synchronizedList(new ArrayList<>());
+        Semaphore semaphore = new Semaphore(MAX_CONCURRENT_CALL);
         AtomicInteger i = new AtomicInteger(0);
-        try {
-
-            //virtual-thread executor
-            try(ExecutorService executor = Executors.newVirtualThreadPerTaskExecutor()) {
-                List<CompletableFuture<Void>> futures = messageIds.stream()
-                        .map(id -> CompletableFuture.runAsync(()-> {
-                            try{
-                                Message messageMetadata = gmail.users().messages()
-                                        .get(USER, id)
-                                        .setFormat("metadata") //meta only
-                                        .execute();
-
-                                EmailMessageDto  raw = EmailMessageDto.builder()
-                                        .id(messageMetadata.getId())
-                                        .emailAccount(account)
-                                        .provider(account.getProvider())
-                                        .providerMessageId(messageMetadata.getId())
-                                        .subject(getHeader(messageMetadata, "Subject"))
-                                        .to(getHeader(messageMetadata, "To"))
-                                        .sender(getHeader(messageMetadata, "From"))
-                                        .receivedDate(Instant.ofEpochMilli(messageMetadata.getInternalDate()))
-                                        .snippet(messageMetadata.getSnippet())
-                                        .build();
-
-                                rawEmailMessages.add(raw);
-                                System.out.println("Current thread name : "  + Thread.currentThread() + " " + i.incrementAndGet());
-                            } catch (IOException e) {
-                                throw new RuntimeException(e);
-
+        for (List<String> batch : partition(messageIds, BATCH_SIZE)) {
+            List<CompletableFuture<Void>> futures = batch.stream()
+                    .map(id -> CompletableFuture.runAsync(() -> {
+                        try {
+                            semaphore.acquire();
+                            Message msg = retry(()->
+                                    gmail.users().messages()
+                                            .get(USER, id)
+                                            .setFormat("metadata")
+                                            .execute()
+                            );
+                            if(msg != null) {
+                                results.add(buildMetaDataDTO(msg,account));
                             }
-                        }, executor))
-                        .toList();
-                //wait for all thread to complete
-                CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).join();
-                log.info("Fetched metadata for {} messages for account {}", rawEmailMessages.size(), account.getProviderEmail());
-                return rawEmailMessages;
-
-            }
 
 
-        }catch (Exception e) {
-            log.error(e.getMessage());
-            return List.of();
+                        } catch (Exception e) {
+                            log.error("Metadata fetch failed for id {}", id, e);
+                        } finally {
+                            semaphore.release();
+                        }
+
+                    }, pipelineExecutor))
+                    .toList();
+            CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).join();
 
         }
+        return results;
 
     }
+
+
+    // ================== RETRY ==================
+
+    private <T> T retry(Supplier<T> supplier) {
+        for (int i = 0; i < RETRY_ATTEMPTS; i++) {
+            try {
+                return supplier.get();
+            } catch (Exception e) {
+                if (i == RETRY_ATTEMPTS - 1) {
+                    log.error("Retry failed after {} attempts", RETRY_ATTEMPTS, e);
+                    return null;
+                }
+            }
+        }
+        return null;
+    }
+
+
+    // ================== PARTITION ==================
+
+    private <T> List<List<T>> partition(List<T> list, int size) {
+        List<List<T>> parts = new ArrayList<>();
+        for (int i = 0; i < list.size(); i += size) {
+            parts.add(list.subList(i, Math.min(i + size, list.size())));
+        }
+        return parts;
+    }
+
+
+
+
+
+
 
     @Override
     public boolean isConnectionValid(EmailAccount account) {
@@ -154,6 +179,20 @@ public class GmailEmailGatewayImpl  implements EmailGateway {
         }
     }
 
+
+    private EmailMessageDto buildMetaDataDTO(Message messageMetadata, EmailAccount account) {
+        return EmailMessageDto.builder()
+                .id(messageMetadata.getId())
+                .emailAccount(account)
+                .provider(account.getProvider())
+                .providerMessageId(messageMetadata.getId())
+                .subject(getHeader(messageMetadata, "Subject"))
+                .to(getHeader(messageMetadata, "To"))
+                .sender(getHeader(messageMetadata, "From"))
+                .receivedDate(Instant.ofEpochMilli(messageMetadata.getInternalDate()))
+                .snippet(messageMetadata.getSnippet())
+                .build();
+    }
 
     private List<String> fetchMessageIds(Gmail gmail, Instant fetchSince) throws IOException {
         List<String> ids =  new ArrayList<>();
@@ -186,43 +225,41 @@ public class GmailEmailGatewayImpl  implements EmailGateway {
     }
 
 
-    private List<RawEmailMessage> fetchFullMessages(Gmail gmail, List<EmailMessageDto> candidates, EmailAccount account) {
+    private List<RawEmailMessage> fetchFullMessagesInBatches(Gmail gmail, List<EmailMessageDto> candidates, EmailAccount account) {
         if(candidates.isEmpty()) return List.of();
+        List<RawEmailMessage> results = Collections.synchronizedList(new ArrayList<>());
+        Semaphore semaphore = new Semaphore(MAX_CONCURRENT_CALL);
 
-        try (ExecutorService taskExecutor = Executors.newVirtualThreadPerTaskExecutor()) {
-            List<CompletableFuture<RawEmailMessage>> futures = candidates.stream()
-                    .map(candidate ->
-                            CompletableFuture.supplyAsync(() -> {
-                                try {
-                                    Message fullMessage = gmail.users()
-                                            .messages()
-                                            .get(USER, candidate.getId())
-                                            .setFormat("full")
-                                            .execute();
+         for(List<EmailMessageDto> batch : partition(candidates, BATCH_SIZE)) {
+             List<CompletableFuture<RawEmailMessage>> futures = batch.stream()
+                     .map(candidate-> CompletableFuture.runAsync(() -> {
+                         try {
+                             semaphore.acquire();
+                             Message fullMessage = retry(()->
+                                     gmail.users()
+                                             .messages()
+                                             .get(USER, candidate.getId())
+                                             .setFormat("full")
+                                             .execute()
 
-                                    return convertToRawEmail(account, fullMessage);
+                             );
 
-                                } catch (Exception e) {
-                                    log.error(
-                                            "Failed to fetch full message {} for account {}",
-                                            candidate.getId(),
-                                            account.getProviderEmail(),
-                                            e
-                                    );
+                             if(fullMessage != null) results.add(convertToRawEmail(account,fullMessage));
 
-                                    return null;
-                                }
+                         }catch (Exception e) {
+                             log.error("Full message fetch failed for {}", candidate.getId(), e);
+                         }finally {
+                             semaphore.release();
+                         }
 
-                            }, taskExecutor)
-                    )
-                    .toList();
+                     }, pipelineExecutor))
+                     .toList();
 
-            return futures.stream()
-                    .map(CompletableFuture::join)
-                    .filter(Objects::nonNull)
-                    .toList();
-        }
+             CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).join();
 
+         }
+
+            return results;
 
     }
 

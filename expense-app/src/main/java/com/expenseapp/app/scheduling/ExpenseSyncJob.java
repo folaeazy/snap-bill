@@ -8,6 +8,7 @@ import com.domain.repositories.EmailAccountRepository;
 import com.infrastructure.email.service.EmailSyncService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.checkerframework.checker.units.qual.A;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -15,14 +16,19 @@ import org.springframework.stereotype.Component;
 
 import java.time.Instant;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Semaphore;
 
 @Component
 @Slf4j
 @RequiredArgsConstructor
 public class ExpenseSyncJob {
     private final EmailAccountRepository emailAccountRepository;
-    private final EmailSyncService emailSyncService;
     private final ApplicationEventPublisher publisher;
+    private final ExecutorService pipelineExecutor;
+    private static final int ACCOUNT_LIMIT = 50;
+
+    private final Semaphore accountSemaphore = new Semaphore(ACCOUNT_LIMIT);
 
 
     // Threshold in seconds: accounts synced within this time are skipped
@@ -57,8 +63,20 @@ public class ExpenseSyncJob {
                 account.setLastSyncAt(Instant.now());
                 emailAccountRepository.save(account);
 
+
                 // Publish event to listener to start the pipeline flow
-                publisher.publishEvent(new EmailSyncRequested(account.getId()));
+                // Async fire-and-forget publishing
+                pipelineExecutor.execute(() -> {
+                    try {
+                        accountSemaphore.acquire();
+                        publisher.publishEvent(new EmailSyncRequested(account.getId()));
+                    } catch (Exception e) {
+                        log.error("Failed to publish EmailSyncRequested for account {}", account.getId(), e);
+                    }finally {
+                        accountSemaphore.release();
+                    }
+                });
+
             }
         }catch (Exception e) {
             log.error("ExpenseSyncJob failed: {}", e.getMessage(), e);

@@ -19,7 +19,7 @@ public class EmailProcessingListener {
 
     @EventListener
     public void handle(EmailProcessingRequested event) {
-        pipelineExecutor.submit(() -> {
+        pipelineExecutor.execute(() -> {
             try {
 
                 log.info("Received EmailSyncCompleted for account {}. Starting LLM processing...", event.accountId());
