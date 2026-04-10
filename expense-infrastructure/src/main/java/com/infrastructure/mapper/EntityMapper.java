@@ -10,7 +10,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class EntityMapper {
 
-    public TransactionEntity toEntity(User user, EmailAccount emailAccount, Transaction tx) {
+    public TransactionEntity toEntity(User user, EmailAccount emailAccount, String providerMessageId, Transaction tx) {
 
         TransactionEntity entity = new TransactionEntity();
         entity.setType(tx.getType());
@@ -25,6 +25,7 @@ public class EntityMapper {
         entity.setAiConfidence(tx.getAiConfidence());
         entity.setUser(user);
         entity.setEmailAccount(emailAccount);
+        entity.setProviderMessageId(providerMessageId);
 
         return entity;
     }

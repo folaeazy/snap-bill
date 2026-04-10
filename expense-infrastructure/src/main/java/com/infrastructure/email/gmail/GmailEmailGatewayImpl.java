@@ -17,9 +17,11 @@ import com.domain.model.EmailMessageDto;
 import com.infrastructure.email.Components.FinancialEmailDetector;
 import com.infrastructure.interfaces.EmailBodyExtractor;
 
+import com.infrastructure.interfaces.RetrySupplier;
 import com.infrastructure.security.TokenService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
@@ -36,7 +38,7 @@ import java.util.function.Supplier;
 
 @Component("googleEmailGateway")
 @Slf4j
-@RequiredArgsConstructor
+
 public class GmailEmailGatewayImpl  implements EmailGateway {
 
     private final FinancialEmailDetector financialEmailDetector;
@@ -51,7 +53,15 @@ public class GmailEmailGatewayImpl  implements EmailGateway {
     private static final int BATCH_SIZE = 20;
     private static final int RETRY_ATTEMPTS = 3;
 
-
+    public GmailEmailGatewayImpl(FinancialEmailDetector financialEmailDetector,
+                                 EmailBodyExtractor emailBodyExtractor,
+                                 TokenService tokenService,
+                                 @Qualifier("pipelineExecutor")ExecutorService pipelineExecutor) {
+        this.financialEmailDetector = financialEmailDetector;
+        this.emailBodyExtractor = emailBodyExtractor;
+        this.tokenService = tokenService;
+        this.pipelineExecutor = pipelineExecutor;
+    }
 
 
     @Override
@@ -136,7 +146,8 @@ public class GmailEmailGatewayImpl  implements EmailGateway {
 
     // ================== RETRY ==================
 
-    private <T> T retry(Supplier<T> supplier) {
+
+    private <T> T retry(RetrySupplier<T> supplier) {
         for (int i = 0; i < RETRY_ATTEMPTS; i++) {
             try {
                 return supplier.get();
@@ -232,7 +243,7 @@ public class GmailEmailGatewayImpl  implements EmailGateway {
 
          for(List<EmailMessageDto> batch : partition(candidates, BATCH_SIZE)) {
              List<CompletableFuture<RawEmailMessage>> futures = batch.stream()
-                     .map(candidate-> CompletableFuture.runAsync(() -> {
+                     .map(candidate -> CompletableFuture.supplyAsync(() -> {
                          try {
                              semaphore.acquire();
                              Message fullMessage = retry(()->
@@ -244,10 +255,11 @@ public class GmailEmailGatewayImpl  implements EmailGateway {
 
                              );
 
-                             if(fullMessage != null) results.add(convertToRawEmail(account,fullMessage));
+                            return convertToRawEmail(account,fullMessage);
 
                          }catch (Exception e) {
                              log.error("Full message fetch failed for {}", candidate.getId(), e);
+                             return null;
                          }finally {
                              semaphore.release();
                          }
@@ -255,7 +267,11 @@ public class GmailEmailGatewayImpl  implements EmailGateway {
                      }, pipelineExecutor))
                      .toList();
 
-             CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).join();
+             List<RawEmailMessage> batchResults = futures.stream()
+                     .map(CompletableFuture::join)
+                     .toList();
+
+             results.addAll(batchResults);
 
          }
 

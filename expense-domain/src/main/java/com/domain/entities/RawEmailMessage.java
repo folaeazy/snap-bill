@@ -48,6 +48,15 @@ public class RawEmailMessage {
     @Column(name = "provider_message_id", nullable = false, unique = true)
     private String providerMessageId;
 
+    @Column(name = "processing_started_at")
+    private Instant processingStartedAt;
+
+    @Column(name = "retry_count")
+    private int retryCount;
+
+    @Column(name = "next_retry_at")
+    private Instant nextRetryAt;
+
     private String subject;
 
     private String sender;

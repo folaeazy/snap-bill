@@ -9,6 +9,7 @@ import com.infrastructure.email.service.EmailSyncService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.checkerframework.checker.units.qual.A;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -21,7 +22,7 @@ import java.util.concurrent.Semaphore;
 
 @Component
 @Slf4j
-@RequiredArgsConstructor
+
 public class ExpenseSyncJob {
     private final EmailAccountRepository emailAccountRepository;
     private final ApplicationEventPublisher publisher;
@@ -38,6 +39,14 @@ public class ExpenseSyncJob {
     // Cron expression from properties
     @Value("${snapbill.sync.cron}")
     private String cronExpression;
+
+    public ExpenseSyncJob(EmailAccountRepository emailAccountRepository,
+                          ApplicationEventPublisher publisher,
+                          @Qualifier("pipelineExecutor")ExecutorService pipelineExecutor) {
+        this.emailAccountRepository = emailAccountRepository;
+        this.publisher = publisher;
+        this.pipelineExecutor = pipelineExecutor;
+    }
 
     /**
      * Scheduler that triggers to whole processing pipeline.

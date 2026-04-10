@@ -97,6 +97,9 @@ public class TransactionEntity {
     @Column(nullable = false)
     private Instant updatedAt = Instant.now();
 
+    @Column(name = "provider_message_id", nullable = false, unique = true)
+    private String providerMessageId;
+
     @PreUpdate
     protected void onUpdate() {
         updatedAt = Instant.now();

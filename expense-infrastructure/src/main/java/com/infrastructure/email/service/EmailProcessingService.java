@@ -3,18 +3,14 @@ package com.infrastructure.email.service;
 import com.domain.entities.RawEmailMessage;
 import com.domain.enums.ProcessingStatus;
 import com.domain.repositories.RawEmailRepository;
-import com.domain.repositories.TransactionRepository;
-import com.infrastructure.mapper.EntityMapper;
-import jakarta.transaction.Transactional;
+import com.infrastructure.email.service.sub.EmailProcessor;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.UUID;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
-import java.util.concurrent.Semaphore;
+import java.util.concurrent.*;
 
 @Service
 @RequiredArgsConstructor
@@ -22,80 +18,50 @@ import java.util.concurrent.Semaphore;
 public class EmailProcessingService {
 
     private final RawEmailRepository rawEmailRepository;
-    private final ExpenseExtractionService expenseExtractionService;
-    private final TransactionRepository transactionRepository;
-    private final EntityMapper entityMapper;
+    private final EmailProcessor emailprocessor;
 
-    private static final int MAX_CONCURRENT_TASKS = 10;   // configurable later
+    private final ExecutorService pipelineExecutor;
 
-    @Transactional
-    public void processPendingEmails() {
-        List<RawEmailMessage> emails = rawEmailRepository.findTop50ByProcessedOrderByReceivedDateAsc(ProcessingStatus.PENDING);
+    private static final int MAX_CONCURRENT_PER_ACCOUNT = 8;// configurable later
+    private static final int BATCH_SIZE = 25;
+
+    /**
+     * Method called by listener
+     */
+    public void processPendingEmailsForAccounts(UUID accountId) {
+        List<RawEmailMessage> emails =
+                rawEmailRepository.findTopByEmailAccountAndProcessedOrderByReceivedDateAsc(accountId,ProcessingStatus.PENDING, BATCH_SIZE);
 
         if (emails.isEmpty()) {
-            log.info("No pending emails to process");
+            log.info("No pending emails to process for account {}", accountId);
             return;
         }
 
-        log.info("Processing batch of {} pending emails", emails.size());
+        log.info("Processing  pending emails of size {} for account {}", emails.size(), accountId);
         processBatch(emails);
     }
 
     private void processBatch(List<RawEmailMessage> emails) {
-        Semaphore semaphore = new Semaphore(MAX_CONCURRENT_TASKS);
+        Semaphore semaphore = new Semaphore(MAX_CONCURRENT_PER_ACCOUNT);
 
-        try (var executor = Executors.newVirtualThreadPerTaskExecutor()) {
-            List<? extends Future<?>> futures = emails.stream()
-                    .map(email -> executor.submit(() -> {
+
+            List<CompletableFuture<Void>> futures = emails.stream()
+                    .map(email -> CompletableFuture.runAsync(() -> {
                         try {
                             semaphore.acquire();
-                            processSingleEmail(email);
+                            emailprocessor.processSingleEmail(email);
                         } catch (InterruptedException e) {
                             Thread.currentThread().interrupt();
                         } finally {
                             semaphore.release();
                         }
-                    }))
+                    }, pipelineExecutor))
                     .toList();
 
             // Wait for all tasks
-            for (Future<?> future : futures) {
-                try {
-                    future.get();
-                } catch (Exception e) {
-                    log.error("Task failed", e);
-                }
-            }
-        }
+        CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).join();
+
     }
 
-    private void processSingleEmail(RawEmailMessage email) {
-        try {
-            email.setProcessed(ProcessingStatus.PROCESSING);
-            rawEmailRepository.save(email);
 
-            var txOpt = expenseExtractionService.extract(email);
-
-            if (txOpt.isPresent()) {
-                var entity = entityMapper.toEntity(
-                        email.getEmailAccount().getUser(),
-                        email.getEmailAccount(),
-                        txOpt.get()
-                );
-                transactionRepository.save(entity);
-
-                email.setProcessed(ProcessingStatus.PROCESSED);
-                email.setFailureReason(null);
-            } else {
-                email.setProcessed(ProcessingStatus.FAILED);
-                email.setFailureReason("Validation failed or not a transaction");
-            }
-        } catch (Exception e) {
-            log.error("Failed to process email {}", email.getId(), e);
-            email.setProcessed(ProcessingStatus.FAILED);
-            email.setFailureReason(e.getMessage());
-        } finally {
-            rawEmailRepository.save(email);
-        }
-    }
 }
