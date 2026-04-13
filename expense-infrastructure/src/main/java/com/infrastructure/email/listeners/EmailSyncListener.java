@@ -68,7 +68,7 @@ public class EmailSyncListener {
                 pipelineFailureRepository.save(
                         PipelineFailure.builder()
                                 .accountId(event.accountId())
-                                .pipelineStage("PROCESSING")
+                                .pipelineStage("SYNCING")
                                 .message(e.getMessage())
                                 .time(Instant.now())
                                 .build()

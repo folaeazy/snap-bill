@@ -29,10 +29,7 @@ public class EmailProcessor {
     @Transactional
     public void processSingleEmail(RawEmailMessage email) {
 
-        //TODO : claiming
         try {
-            email.setProcessed(ProcessingStatus.PROCESSING);
-            rawEmailRepository.save(email);
 
             var txOpt = expenseExtractionService.extract(email);
 
@@ -68,7 +65,7 @@ public class EmailProcessor {
             markFailed(email, "SYSTEM_ERROR", true);
 
         } finally {
-            rawEmailRepository.save(email);
+            rawEmailRepository.saveMessage(email);
         }
     }
 

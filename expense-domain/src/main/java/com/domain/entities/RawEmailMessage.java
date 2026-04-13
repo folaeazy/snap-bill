@@ -57,6 +57,9 @@ public class RawEmailMessage {
     @Column(name = "next_retry_at")
     private Instant nextRetryAt;
 
+    @Column(name = "claim_token")
+    private UUID claimToken;
+
     private String subject;
 
     private String sender;
