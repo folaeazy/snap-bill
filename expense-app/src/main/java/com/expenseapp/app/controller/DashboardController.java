@@ -1,5 +1,6 @@
 package com.expenseapp.app.controller;
 
+import com.domain.entities.User;
 import com.expenseapp.app.dto.dashboard.response.DashboardResponse;
 import com.expenseapp.app.dto.response.ApiResponse;
 import com.expenseapp.app.interfaces.DashboardService;
@@ -15,9 +16,11 @@ import org.springframework.web.bind.annotation.RestController;
 public class DashboardController {
 
     private final DashboardService dashboardService;
+    private final CurrentUser currentUser;
 
     public ResponseEntity<ApiResponse<DashboardResponse>> getDashboardSummary(){
-        DashboardResponse data = dashboardService.getDashboardSummary();
+        User user = currentUser.getCurrentUser();
+        DashboardResponse data = dashboardService.getDashboardSummary(user);
         var response = ApiResponse.<DashboardResponse>builder()
                 .success(true)
                 .statusCode(HttpStatus.OK.value())

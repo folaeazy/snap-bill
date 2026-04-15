@@ -3,7 +3,9 @@ package com.infrastructure.persistence.repositories;
 import com.domain.entities.TransactionEntity;
 import com.domain.entities.User;
 import com.domain.enums.TransactionType;
-import com.domain.repositories.TransactionRepository;
+import com.domain.interfaces.CategoryTotal;
+import com.domain.interfaces.RecentExpenseProjection;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
@@ -12,6 +14,7 @@ import org.springframework.stereotype.Repository;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -47,5 +50,36 @@ public interface SpringDataTransactionRepository extends
             @Param("type") TransactionType type,
             @Param("start") LocalDate start,
             @Param("end") LocalDate end
+    );
+
+
+    @Query("""
+            SELECT t.categoryName as category, SUM(t.amount) as total
+                FROM TransactionEntity t
+                WHERE t.user = :user
+                  AND t.type = :type
+                GROUP BY t.categoryName
+                ORDER BY SUM(t.amount) DESC
+            """)
+    List<CategoryTotal> findTopCategories(@Param("user") User user, @Param("type") TransactionType type);
+
+
+    @Query("""
+        SELECT\s
+        t.id as id,
+        t.transactionDateTime as transactionDateTime,
+        t.merchantName as merchantName,
+        t.categoryName as categoryName,
+        t.amount as amount,
+        t.currency as currency
+    FROM TransactionEntity t
+    WHERE t.user = :user
+      AND t.type = :type
+    ORDER BY t.transactionDateTime DESC
+           \s""")
+    List<RecentExpenseProjection> findRecentExpenses(
+            @Param("user") User user,
+            @Param("type") TransactionType type,
+            Pageable pageable
     );
 }

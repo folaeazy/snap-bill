@@ -3,6 +3,8 @@ package com.domain.repositories;
 import com.domain.entities.TransactionEntity;
 import com.domain.entities.User;
 import com.domain.enums.TransactionType;
+import com.domain.interfaces.CategoryTotal;
+import com.domain.interfaces.RecentExpenseProjection;
 import com.domain.model.ExpenseRequestQuery;
 import com.domain.model.PagedResponse;
 
@@ -40,6 +42,28 @@ public interface TransactionRepository {
      * Find all transaction for a user within start and end date
      */
     BigDecimal getSpentBetween(User user, TransactionType type, LocalDate start, LocalDate end);
+
+    /**
+     *
+     * Find all top categories
+     */
+    List<CategoryTotal> findTopCategories(User user, TransactionType type);
+
+    /**
+     * Find recent expenses for user with limit
+     */
+    List<RecentExpenseProjection> findRecentExpenses(User user, TransactionType type, int limit);
+
+
+    /**
+     * Delete an expense (soft or hard — depends on your business rules).
+     */
+    void deleteById(UUID id);
+}
+
+
+
+
 //    /**
 //     * Find debits (expenses) only for a user in a date range.
 //     */
@@ -59,9 +83,3 @@ public interface TransactionRepository {
 //     * Count expenses in a period (for quick summaries without loading full list).
 //     */
 //    long countByUserIdAndTransactionDateBetween(UUID userId, LocalDate start, LocalDate endInclusive);
-
-    /**
-     * Delete an expense (soft or hard — depends on your business rules).
-     */
-    void deleteById(UUID id);
-}

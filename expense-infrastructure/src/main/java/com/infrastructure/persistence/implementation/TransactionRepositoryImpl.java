@@ -3,6 +3,8 @@ package com.infrastructure.persistence.implementation;
 import com.domain.entities.TransactionEntity;
 import com.domain.entities.User;
 import com.domain.enums.TransactionType;
+import com.domain.interfaces.CategoryTotal;
+import com.domain.interfaces.RecentExpenseProjection;
 import com.domain.model.ExpenseRequestQuery;
 import com.domain.model.PagedResponse;
 import com.domain.repositories.TransactionRepository;
@@ -18,6 +20,7 @@ import org.springframework.stereotype.Repository;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -62,6 +65,18 @@ public class TransactionRepositoryImpl implements TransactionRepository {
     @Override
     public BigDecimal getSpentBetween(User user, TransactionType type, LocalDate start, LocalDate end) {
         return jpASpr.getSpentBetween(user, type, start, end);
+    }
+
+
+    @Override
+    public List<CategoryTotal> findTopCategories(User user, TransactionType type) {
+        return jpASpr.findTopCategories(user, type);
+    }
+
+
+    @Override
+    public List<RecentExpenseProjection> findRecentExpenses(User user, TransactionType type, int limit) {
+        return jpASpr.findRecentExpenses(user, type, PageRequest.of(0,limit));
     }
 
 

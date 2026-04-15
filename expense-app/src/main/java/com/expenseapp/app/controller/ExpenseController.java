@@ -102,11 +102,5 @@ public class ExpenseController {
 
 
     //============Helper method-===================//
-    private User getCurrentUser() {
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        if (auth == null || !(auth.getPrincipal() instanceof AuthenticatedUser au)) {
-            throw new IllegalStateException("User not authenticated");
-        }
-        return au.getUser();
-    }
+
 }
