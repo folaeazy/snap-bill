@@ -54,6 +54,7 @@ spring:
       client:
         registration:
           google:
+
             scope: openid,profile,email,https://www.googleapis.com/auth/gmail.readonly
             redirect-uri: "{baseUrl}/login/oauth2/code/google"
             client-name: Google

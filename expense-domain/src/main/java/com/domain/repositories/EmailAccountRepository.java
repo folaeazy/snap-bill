@@ -58,5 +58,6 @@ public interface EmailAccountRepository {
 
     List<EmailAccount> findAccountsToSync(ConnectionStatus status, Instant threshold);
 
+    int countActiveAccounts(User user);
 
 }

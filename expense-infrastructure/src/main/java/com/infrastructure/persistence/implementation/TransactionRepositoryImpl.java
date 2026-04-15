@@ -1,6 +1,8 @@
 package com.infrastructure.persistence.implementation;
 
 import com.domain.entities.TransactionEntity;
+import com.domain.entities.User;
+import com.domain.enums.TransactionType;
 import com.domain.model.ExpenseRequestQuery;
 import com.domain.model.PagedResponse;
 import com.domain.repositories.TransactionRepository;
@@ -14,6 +16,8 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Repository;
 
+import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -50,6 +54,15 @@ public class TransactionRepositoryImpl implements TransactionRepository {
 
     }
 
+    @Override
+    public BigDecimal getTotalSpent(User user, TransactionType type) {
+        return jpASpr.getTotalSpent(user,type);
+    }
+
+    @Override
+    public BigDecimal getSpentBetween(User user, TransactionType type, LocalDate start, LocalDate end) {
+        return jpASpr.getSpentBetween(user, type, start, end);
+    }
 
 
     @Override

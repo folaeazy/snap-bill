@@ -1,10 +1,12 @@
 package com.domain.repositories;
 
 import com.domain.entities.TransactionEntity;
+import com.domain.entities.User;
 import com.domain.enums.TransactionType;
 import com.domain.model.ExpenseRequestQuery;
 import com.domain.model.PagedResponse;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
@@ -29,10 +31,15 @@ public interface TransactionRepository {
     PagedResponse<TransactionEntity> findAll(ExpenseRequestQuery query);
 
     /**
-     * Find all expenses for a user within a date range.
+     * Get total spent in through debit transaction
      */
-//    List<TransactionEntity> findByUserIdAndTransactionDateBetween(UUID userId, LocalDate start, LocalDate endInclusive);
-//
+    BigDecimal getTotalSpent(User user, TransactionType type);
+
+
+    /**
+     * Find all transaction for a user within start and end date
+     */
+    BigDecimal getSpentBetween(User user, TransactionType type, LocalDate start, LocalDate end);
 //    /**
 //     * Find debits (expenses) only for a user in a date range.
 //     */
