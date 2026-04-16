@@ -59,4 +59,5 @@ public interface EmailAccountRepository {
 
     int countByUserAndStatus(User user, ConnectionStatus status);
 
+    List<UUID> findIdsByUser(User user);
 }

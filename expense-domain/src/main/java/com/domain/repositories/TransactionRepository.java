@@ -3,8 +3,10 @@ package com.domain.repositories;
 import com.domain.entities.TransactionEntity;
 import com.domain.entities.User;
 import com.domain.enums.TransactionType;
-import com.domain.interfaces.CategoryTotal;
-import com.domain.interfaces.RecentExpenseProjection;
+import com.domain.interfaces.projections.CategoryTotalProjection;
+import com.domain.interfaces.projections.MerchantProjection;
+import com.domain.interfaces.projections.MonthlyTrendProjection;
+import com.domain.interfaces.projections.RecentExpenseProjection;
 import com.domain.model.ExpenseRequestQuery;
 import com.domain.model.PagedResponse;
 
@@ -31,28 +33,6 @@ public interface TransactionRepository {
      *  Find All with Specification filter.
      */
     PagedResponse<TransactionEntity> findAll(ExpenseRequestQuery query);
-
-    /**
-     * Get total spent in through debit transaction
-     */
-    BigDecimal getTotalSpent(User user, TransactionType type);
-
-
-    /**
-     * Find all transaction for a user within start and end date
-     */
-    BigDecimal getSpentBetween(User user, TransactionType type, LocalDate start, LocalDate end);
-
-    /**
-     *
-     * Find all top categories
-     */
-    List<CategoryTotal> findTopCategories(User user, TransactionType type);
-
-    /**
-     * Find recent expenses for user with limit
-     */
-    List<RecentExpenseProjection> findRecentExpenses(User user, TransactionType type, int limit);
 
 
     /**

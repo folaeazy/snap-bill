@@ -3,10 +3,10 @@ package com.expenseapp.app.service;
 import com.domain.entities.User;
 import com.domain.enums.ConnectionStatus;
 import com.domain.enums.TransactionType;
-import com.domain.interfaces.CategoryTotal;
-import com.domain.interfaces.RecentExpenseProjection;
+import com.domain.interfaces.projections.CategoryTotalProjection;
+import com.domain.interfaces.projections.RecentExpenseProjection;
+import com.domain.repositories.DashboardRepository;
 import com.domain.repositories.EmailAccountRepository;
-import com.domain.repositories.TransactionRepository;
 import com.expenseapp.app.dto.dashboard.models.AiInsight;
 import com.expenseapp.app.dto.dashboard.models.RecentExpense;
 import com.expenseapp.app.dto.dashboard.models.SavingsGoal;
@@ -27,7 +27,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class DashboardServiceImpl implements DashboardService {
 
-    private final TransactionRepository transactionRepository;
+    private final DashboardRepository dashboardRepositoryRepository;
     private final EmailAccountRepository emailAccountRepository;
     private final DateFormatter dateFormatter;
 
@@ -59,7 +59,7 @@ public class DashboardServiceImpl implements DashboardService {
     // RECENT EXPENSES
     // ========================
     private List<RecentExpense> getRecentExpenses(User user) {
-        List<RecentExpenseProjection> result = transactionRepository.findRecentExpenses(
+        List<RecentExpenseProjection> result = dashboardRepositoryRepository.findRecentExpenses(
                 user,
                 TransactionType.DEBIT,
                 5
@@ -79,9 +79,9 @@ public class DashboardServiceImpl implements DashboardService {
         return RecentExpense.builder()
                 .id(recents.getId())
                 .date(localDate)
-                .merchant(recents.getMerchantName())
+                .merchant(recents.getMerchant())
                 .displayDate(dateFormatter.formatDate(recents.getTransactionDateTime()))
-                .category(recents.getCategoryName())
+                .category(recents.getCategory())
                 .currency(recents.getCurrency().name())
                 .amount(recents.getAmount())
                 .build();
@@ -103,11 +103,11 @@ public class DashboardServiceImpl implements DashboardService {
 
         //  Total spent (all time)
         BigDecimal totalSpent =
-                transactionRepository.getTotalSpent(user, TransactionType.DEBIT);
+                dashboardRepositoryRepository.getTotalSpent(user, TransactionType.DEBIT);
 
         //  This month
         BigDecimal thisMonthSpent =
-                transactionRepository.getSpentBetween(
+                dashboardRepositoryRepository.getSpentBetween(
                         user,
                         TransactionType.DEBIT,
                         startOfMonth,
@@ -116,7 +116,7 @@ public class DashboardServiceImpl implements DashboardService {
 
         //  Last month
         BigDecimal lastMonthSpent =
-                transactionRepository.getSpentBetween(
+                dashboardRepositoryRepository.getSpentBetween(
                         user,
                         TransactionType.DEBIT,
                         startOfLastMonth,
@@ -129,19 +129,19 @@ public class DashboardServiceImpl implements DashboardService {
 
         double totalChange = monthlyChange; // simple version for now
 
-        // 🏆 Top category
-        List<CategoryTotal> categories =
-                transactionRepository.findTopCategories(user, TransactionType.DEBIT);
+        //  Top category
+        List<CategoryTotalProjection> categories =
+                dashboardRepositoryRepository.findTopCategories(user, TransactionType.DEBIT);
 
         String topCategory = "N/A";
         double topCategoryPercentage = 0;
 
         if (!categories.isEmpty()) {
-            CategoryTotal top = categories.getFirst();
+            CategoryTotalProjection top = categories.getFirst();
             topCategory = top.getCategory();
 
             if (totalSpent.compareTo(BigDecimal.ZERO) > 0) {
-                topCategoryPercentage = top.getTotal()
+                topCategoryPercentage = top.getTotalAmount()
                         .divide(totalSpent, 4, RoundingMode.HALF_UP)
                         .multiply(BigDecimal.valueOf(100))
                         .doubleValue();

@@ -1,4 +1,4 @@
-package com.domain.interfaces;
+package com.domain.interfaces.projections;
 
 import com.domain.valueObjects.CurrencyCode;
 
@@ -11,9 +11,9 @@ public interface RecentExpenseProjection {
 
         Instant getTransactionDateTime();
 
-        String getMerchantName();
+        String getMerchant();
 
-        String getCategoryName();
+        String getCategory();
 
         BigDecimal getAmount();
 

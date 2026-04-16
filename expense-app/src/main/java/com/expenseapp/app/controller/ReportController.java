@@ -1,5 +1,6 @@
 package com.expenseapp.app.controller;
 
+import com.domain.entities.User;
 import com.expenseapp.app.dto.report.request.ReportQueryRequest;
 import com.expenseapp.app.dto.report.response.ReportOverviewResponse;
 import com.expenseapp.app.dto.response.ApiResponse;
@@ -20,12 +21,14 @@ import org.springframework.web.bind.annotation.RestController;
 public class ReportController {
 
     private final ReportService reportService;
+    private final CurrentUser currentUser;
 
 
     @GetMapping("/overview")
     ResponseEntity<ApiResponse<ReportOverviewResponse>> getReportOverview(@Valid @ModelAttribute ReportQueryRequest request) {
 
-        ReportOverviewResponse data = reportService.getOverview(request);
+        User user = currentUser.getCurrentUser();
+        ReportOverviewResponse data = reportService.getOverview(user, request);
         var response = ApiResponse.<ReportOverviewResponse>builder()
                 .success(true)
                 .statusCode(HttpStatus.OK.value())

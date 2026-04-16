@@ -6,7 +6,6 @@ import com.domain.entities.RawEmailMessage;
 import com.domain.gateways.EmailGateway;
 import com.domain.repositories.EmailAccountRepository;
 import com.domain.repositories.RawEmailRepository;
-import com.infrastructure.persistence.repositories.SpringDataRawEmailRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;

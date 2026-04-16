@@ -16,7 +16,10 @@ import java.util.Set;
 import java.util.UUID;
 
 @Entity
-@Table(name = "transactions")
+@Table(name = "transactions" , indexes = {
+        @Index(name = "idx_user_date", columnList = "user_id, transaction_date"),
+        @Index(name = "idx_account_date", columnList = "email_account_id, transaction_date")
+})
 @Getter
 @Setter
 @NoArgsConstructor
@@ -39,7 +42,7 @@ public class TransactionEntity {
     @Column(nullable = false)
     private TransactionType type;
 
-    @Column(nullable = false)
+    @Column(name = "transaction_date", nullable = false)
     private LocalDate transactionDate;
 
     @Column
@@ -51,7 +54,7 @@ public class TransactionEntity {
     @Column
     private String merchant;
 
-    @Column
+    @Column(nullable = false)
     private String category;
 
     @ElementCollection
@@ -105,6 +108,5 @@ public class TransactionEntity {
         updatedAt = Instant.now();
     }
 
-//    @Column(name = "raw_email_id")
-//    private UUID rawEmailId;
+
 }

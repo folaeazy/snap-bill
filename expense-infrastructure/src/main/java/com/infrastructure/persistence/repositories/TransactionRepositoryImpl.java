@@ -1,14 +1,15 @@
-package com.infrastructure.persistence.implementation;
+package com.infrastructure.persistence.repositories;
 
 import com.domain.entities.TransactionEntity;
 import com.domain.entities.User;
 import com.domain.enums.TransactionType;
-import com.domain.interfaces.CategoryTotal;
-import com.domain.interfaces.RecentExpenseProjection;
+import com.domain.interfaces.projections.CategoryTotalProjection;
+import com.domain.interfaces.projections.MerchantProjection;
+import com.domain.interfaces.projections.MonthlyTrendProjection;
+import com.domain.interfaces.projections.RecentExpenseProjection;
 import com.domain.model.ExpenseRequestQuery;
 import com.domain.model.PagedResponse;
 import com.domain.repositories.TransactionRepository;
-import com.infrastructure.persistence.repositories.SpringDataTransactionRepository;
 import com.infrastructure.persistence.specification.TransactionSpecifications;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -27,7 +28,7 @@ import java.util.UUID;
 @Repository
 @RequiredArgsConstructor
 public class TransactionRepositoryImpl implements TransactionRepository {
-    private final SpringDataTransactionRepository jpASpr;
+    private final TransactionJpaRepository jpASpr;
 
     @Override
     public TransactionEntity save(TransactionEntity expense) {
@@ -57,27 +58,8 @@ public class TransactionRepositoryImpl implements TransactionRepository {
 
     }
 
-    @Override
-    public BigDecimal getTotalSpent(User user, TransactionType type) {
-        return jpASpr.getTotalSpent(user,type);
-    }
-
-    @Override
-    public BigDecimal getSpentBetween(User user, TransactionType type, LocalDate start, LocalDate end) {
-        return jpASpr.getSpentBetween(user, type, start, end);
-    }
 
 
-    @Override
-    public List<CategoryTotal> findTopCategories(User user, TransactionType type) {
-        return jpASpr.findTopCategories(user, type);
-    }
-
-
-    @Override
-    public List<RecentExpenseProjection> findRecentExpenses(User user, TransactionType type, int limit) {
-        return jpASpr.findRecentExpenses(user, type, PageRequest.of(0,limit));
-    }
 
 
     @Override

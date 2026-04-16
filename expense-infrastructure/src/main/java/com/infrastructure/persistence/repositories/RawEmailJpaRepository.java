@@ -2,8 +2,6 @@ package com.infrastructure.persistence.repositories;
 
 import com.domain.entities.EmailAccount;
 import com.domain.entities.RawEmailMessage;
-import com.domain.model.PagedResponse;
-import com.domain.repositories.RawEmailRepository;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
@@ -12,11 +10,10 @@ import org.springframework.stereotype.Repository;
 
 import java.time.Instant;
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 
 @Repository
-public interface SpringDataRawEmailRepository extends JpaRepository<RawEmailMessage, UUID> {
+interface RawEmailJpaRepository extends JpaRepository<RawEmailMessage, UUID> {
 
     //@Override
     default List<RawEmailMessage> saveAllMessages(Iterable<RawEmailMessage> messages) {

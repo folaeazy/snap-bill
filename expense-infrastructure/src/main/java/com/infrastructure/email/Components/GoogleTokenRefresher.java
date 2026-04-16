@@ -18,7 +18,6 @@ public class GoogleTokenRefresher implements TokenRefresher {
 
     private final String clientId = "";
 
-
     private final String clientSecret = "";
 
     /**

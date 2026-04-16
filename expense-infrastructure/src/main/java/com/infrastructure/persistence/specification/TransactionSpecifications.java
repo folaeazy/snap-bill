@@ -10,6 +10,8 @@ import java.util.UUID;
 
 public class TransactionSpecifications {
 
+    private TransactionSpecifications() {}
+
     public static Specification<TransactionEntity> hasUser(UUID userId) {
         return (root, query, cb) ->
                 cb.equal(root.get("user").get("id"), userId);
@@ -93,6 +95,12 @@ public class TransactionSpecifications {
                     cb.like(cb.lower(root.get("description")), pattern)
             );
         };
+    }
+
+    public static Specification<TransactionEntity> baseFilter(List<UUID> accountIds, LocalDate start, LocalDate end){
+        return Specification
+                .where(emailAccountIn(accountIds))
+                .and(dateBetween(start,end));
     }
 
 
