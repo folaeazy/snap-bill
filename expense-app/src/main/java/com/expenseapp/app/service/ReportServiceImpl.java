@@ -33,7 +33,7 @@ public class ReportServiceImpl implements ReportService {
     private final ReportRepository reportRepository;
 
     private static final int TOP_MERCHANTS_LIMIT = 5;
-    private static final BigDecimal DEFAULT_BUDGET = new BigDecimal("6000");
+    private static final BigDecimal DEFAULT_BUDGET = new BigDecimal("6000"); // TODO ; implement budget entry
 
     // Month abbreviations map
     private static final Map<Integer, String> MONTH_LABELS = Map.ofEntries(
@@ -65,21 +65,26 @@ public class ReportServiceImpl implements ReportService {
     private Summary buildSummary(User user, TransactionType type, List<UUID> accountIds,
                                  LocalDate start,
                                  LocalDate end) {
+
+        start = LocalDate.now().withDayOfMonth(1);
+        end = LocalDate.now();
         BigDecimal thisMonth = reportRepository.sumAmountByAccounts(user, type, accountIds, start, end);
 
         // Previous period of same length for % change
-        long daysBetween     = ChronoUnit.DAYS.between(start, end);
-        LocalDate prevEnd    = start.minusDays(1);
-        LocalDate prevStart  = prevEnd.minusDays(daysBetween);
-        BigDecimal prevMonth = reportRepository.sumAmountByAccounts(user, type, accountIds, prevStart, prevEnd);
+        LocalDate prevMonthStart = start.minusMonths(1);
+        LocalDate prevMonthEnd = end.minusMonths(1);
+
+        BigDecimal prevMonth = reportRepository.sumAmountByAccounts(user, type, accountIds, prevMonthStart, prevMonthEnd);
 
         Double percentageChange = calculatePercentageChange(prevMonth, thisMonth);
 
+        // Daily average implementation
+        long daysBetween = ChronoUnit.DAYS.between(start, end);
         long days         = daysBetween == 0 ? 1 : daysBetween + 1;
         BigDecimal daily  = thisMonth.divide(BigDecimal.valueOf(days), 2, RoundingMode.HALF_UP);
 
         // Previous daily average for daily change %
-        long prevDays          = ChronoUnit.DAYS.between(prevStart, prevEnd) + 1;
+        long prevDays          = ChronoUnit.DAYS.between(prevMonthStart, prevMonthEnd) + 1;
         BigDecimal prevDaily   = prevMonth.divide(BigDecimal.valueOf(prevDays), 2, RoundingMode.HALF_UP);
         Double dailyChange     = calculatePercentageChange(prevDaily, daily);
 

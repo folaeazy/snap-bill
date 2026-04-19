@@ -7,10 +7,10 @@ import java.math.BigDecimal;
 @Builder
 public record SummaryCards(
         BigDecimal totalSpent,
-        double totalSpentChangePercentage,
+        double  monthlyChangePercentage,
 
         BigDecimal thisMonthSpent,
-        double monthlyChangePercentage,
+        double thisMonthSpentVsBudgetPercentage,
 
         String topCategory,
         double topCategoryPercentage,

@@ -123,11 +123,11 @@ public class DashboardServiceImpl implements DashboardService {
                         endOfLastMonth
                 );
 
-        // 📊 Percentage calculations
+        //  Percentage calculations
         double monthlyChange =
                 calculatePercentageChange(thisMonthSpent, lastMonthSpent);
 
-        double totalChange = monthlyChange; // simple version for now
+        // simple version for now
 
         //  Top category
         List<CategoryTotalProjection> categories =
@@ -157,7 +157,7 @@ public class DashboardServiceImpl implements DashboardService {
 
         return SummaryCards.builder()
                 .totalSpent(totalSpent)
-                .totalSpentChangePercentage(totalChange)
+                .thisMonthSpentVsBudgetPercentage(-10.00) // Todo: implement later
                 .thisMonthSpent(thisMonthSpent)
                 .monthlyChangePercentage(monthlyChange)
                 .topCategory(topCategory)
@@ -179,12 +179,13 @@ public class DashboardServiceImpl implements DashboardService {
     private SavingsGoal buildSavingsGoal() {
         return SavingsGoal.builder()
                 .name("Emergency Fund")
-                .currentAmount(BigDecimal.valueOf(150000))
-                .targetAmount(BigDecimal.valueOf(500000))
+                .currentAmount(BigDecimal.valueOf(150000)) //Todo: implement later
+                .targetAmount(BigDecimal.valueOf(500000)) // Todo : implement later
                 .progressPercentage(30.0)
                 .build();
     }
 
+    // ((current - previous) / previous ) * 100
     private double calculatePercentageChange(BigDecimal current, BigDecimal previous) {
 
         if (previous == null || previous.compareTo(BigDecimal.ZERO) == 0) {
