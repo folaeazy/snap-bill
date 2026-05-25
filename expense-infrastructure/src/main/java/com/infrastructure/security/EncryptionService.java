@@ -12,7 +12,7 @@ import java.util.Base64;
 public class EncryptionService {
     private final SecretKey secretKey;
 
-    public EncryptionService(@Value("${app.token.secret}") String secret) {
+    public EncryptionService(@Value("${encryption.token.secret}") String secret) {
         byte[] keyBytes = Base64.getDecoder().decode(secret);
         this.secretKey = new SecretKeySpec( keyBytes ,"AES");
     }

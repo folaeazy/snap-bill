@@ -7,8 +7,10 @@ import com.google.api.client.googleapis.auth.oauth2.GoogleRefreshTokenRequest;
 import com.google.api.client.googleapis.auth.oauth2.GoogleTokenResponse;
 import com.google.api.client.googleapis.javanet.GoogleNetHttpTransport;
 import com.google.api.client.json.gson.GsonFactory;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Repository;
 
 import java.time.Instant;
 
@@ -16,6 +18,11 @@ import java.time.Instant;
 public class GoogleTokenRefresher implements TokenRefresher {
 
 
+    @Value("${snapbill.google.client.id}")
+    private  String clientId;
+
+    @Value("${snapbill.google.client.secret}")
+    private  String clientSecret;
 
     /**
      * @param refreshToken
