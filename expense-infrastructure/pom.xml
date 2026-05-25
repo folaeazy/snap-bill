@@ -27,6 +27,7 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-webflux</artifactId>
+            <version>4.0.2</version>
         </dependency>
         <!-- Google API Client -->
 <!--        <dependency>-->
