@@ -37,4 +37,5 @@ build/
 ### Mac OS ###
 .DS_Store
 
-application-dev.yml
+
+/expense-app/src/main/resources/application-dev.yml

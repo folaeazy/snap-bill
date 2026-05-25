@@ -17,7 +17,6 @@ public class GoogleTokenRefresher implements TokenRefresher {
 
 
 
-
     /**
      * @param refreshToken
      * @return TokenRefreshResult
