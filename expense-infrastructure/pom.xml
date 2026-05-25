@@ -24,10 +24,12 @@
             <artifactId>spring-boot-starter-data-jpa</artifactId>
         </dependency>
 
+        <!-- Source: https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-starter-webflux -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-webflux</artifactId>
-            <version>3.1.1</version>
+            <version>4.1.0-RC1</version>
+            <scope>compile</scope>
         </dependency>
         <!-- Google API Client -->
 <!--        <dependency>-->
@@ -46,8 +48,9 @@
         <dependency>
             <groupId>com.google.apis</groupId>
             <artifactId>google-api-services-gmail</artifactId>
-            <scope>compile</scope>
+            <version>v1-rev20260511-2.0.0</version>
         </dependency>
+
 
         <!-- Microsoft Graph (Outlook) -->
         <dependency>
