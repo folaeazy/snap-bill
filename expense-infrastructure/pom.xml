@@ -27,7 +27,7 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-webflux</artifactId>
-            <version>4.0.2</version>
+            <version>3.1.1</version>
         </dependency>
         <!-- Google API Client -->
 <!--        <dependency>-->
@@ -39,14 +39,13 @@
         <dependency>
             <groupId>com.google.auth</groupId>
             <artifactId>google-auth-library-oauth2-http</artifactId>
-            <version>1.24.0</version> <!-- latest as of 2026 -->
+            <version>1.33.1</version> <!-- latest as of 2026 -->
         </dependency>
 
         <!-- Source: https://mvnrepository.com/artifact/com.google.apis/google-api-services-gmail -->
         <dependency>
             <groupId>com.google.apis</groupId>
             <artifactId>google-api-services-gmail</artifactId>
-            <version>v1-rev110-1.25.0</version>
             <scope>compile</scope>
         </dependency>
 
