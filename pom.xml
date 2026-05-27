@@ -40,7 +40,6 @@
 
 
     <build>
-        <finalName>snapbill</finalName>
         <pluginManagement>
             <plugins>
                 <plugin>

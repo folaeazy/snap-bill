@@ -135,7 +135,7 @@
     </dependencies>
 
     <build>
-
+        <finalName>snapbill</finalName>
         <plugins>
             <plugin>
                 <groupId>org.springframework.boot</groupId>
