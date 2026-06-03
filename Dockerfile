@@ -9,7 +9,7 @@ COPY expense-infrastructure ./expense-infrastructure
 COPY expense-domain ./expense-domain
 
 # Build only module-3 and its dependencies
-RUN mvn clean package -pl expense-app -am -DskipTests
+RUN mvn clean package -pl expense-app -am
 
 # Step 2: Run the application
 FROM eclipse-temurin:17-jre-jammy
