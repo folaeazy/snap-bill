@@ -13,7 +13,7 @@ public class EncryptionService {
     private final SecretKey secretKey;
 
     public EncryptionService(@Value("${encryption.token.secret:3XbWzL8Wv3pF5m2qYcN7uQkR1tV6hJdP4sE9aTz0bYw=}") String secret) {
-        byte[] keyBytes = Base64.getDecoder().decode(secret);
+        byte[] keyBytes = Base64.getMimeDecoder().decode(secret.trim());
         this.secretKey = new SecretKeySpec( keyBytes ,"AES");
     }
 
@@ -21,7 +21,7 @@ public class EncryptionService {
         try {
             Cipher cipher = Cipher.getInstance("AES");
             cipher.init(Cipher.ENCRYPT_MODE, secretKey);
-            return Base64.getEncoder()
+            return Base64.getMimeEncoder()
                     .encodeToString(cipher.doFinal(rawToken.getBytes()));
 
         }catch(Exception e) {
@@ -35,7 +35,7 @@ public class EncryptionService {
             Cipher cipher = Cipher.getInstance("AES");
             cipher.init(Cipher.DECRYPT_MODE, secretKey);
             return new String(cipher.doFinal(
-                    Base64.getDecoder().decode(encryptedToken)
+                    Base64.getMimeDecoder().decode(encryptedToken)
             ));
         } catch (Exception e) {
             throw new IllegalStateException("Token decryption failed", e);
