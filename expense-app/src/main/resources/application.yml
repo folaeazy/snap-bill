@@ -2,7 +2,7 @@ spring:
   application:
     name: snapbill
   profiles:
-    active: prod     # ← This tells Spring to also load application-dev.yml
+    active: dev     # ← This tells Spring to also load application-dev.yml
 
 # Common settings (no secrets here)
 server:

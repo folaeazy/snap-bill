@@ -26,10 +26,11 @@ import java.util.UUID;
 public class ExpenseController {
 
     private final ExpenseService expenseService;
+    private final CurrentUser currentUser;
 
     @GetMapping("/")
     public ResponseEntity<ApiResponse<PagedResponse<ExpenseResponse>>> getExpenses(@Valid @ModelAttribute ExpenseRequestQuery requestQuery) {
-        UUID userId =  UUID.fromString("395045ce-4920-45f8-bd34-507955e08f14");//getCurrentUser().getId();
+        UUID userId =  currentUser.getCurrentUser().getId();
         var result =  expenseService.getExpenses(requestQuery, userId);
         PagedResponse<ExpenseResponse> pagedResponse = new PagedResponse<>(
                 result.content(),

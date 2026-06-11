@@ -16,6 +16,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClient;
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClientService;
@@ -41,6 +42,9 @@ public class OAuth2AuthenticationSuccessHandler implements AuthenticationSuccess
     private final OAuth2AuthorizedClientService oAuth2AuthorizedClientService;
     private final OAuthService oAuthService;
 
+    @Value("${clientRedirect}")
+    private  String clientRedirect;
+
 
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response,
@@ -62,10 +66,11 @@ public class OAuth2AuthenticationSuccessHandler implements AuthenticationSuccess
             cookie.setMaxAge(60 * 30 ); // 30min
             cookie.setPath("/");
             response.addCookie(cookie);
-            response.sendRedirect("http://localhost:3000/dashboard"); // client domain
+            response.sendRedirect(clientRedirect); // client domain
+
 
         }else {
-            response.sendRedirect("http://localhost:3000/dashboard?linked=true");
+            response.sendRedirect(clientRedirect + "?linked=true");
         }
 
     }
