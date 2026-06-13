@@ -1,6 +1,6 @@
 package com.expenseapp.app.exceptions;
 
-import com.expenseapp.app.dto.response.ApiResponse;
+import com.expenseapp.app.dto.response.AppResponse;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -21,7 +21,7 @@ public class CustomAuthEntryHandler implements AuthenticationEntryPoint {
 
     @Override
     public void commence(HttpServletRequest request, HttpServletResponse response, AuthenticationException authException) throws IOException, ServletException {
-        ApiResponse<Void> errorResponse = ApiResponse.<Void>builder()
+        AppResponse<Void> errorResponse = AppResponse.<Void>builder()
                 .statusCode(HttpStatus.UNAUTHORIZED.value())
                 .message(authException.getMessage())
                 .build();

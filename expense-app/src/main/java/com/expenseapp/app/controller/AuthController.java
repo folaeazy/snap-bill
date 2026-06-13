@@ -1,6 +1,6 @@
 package com.expenseapp.app.controller;
 
-import com.expenseapp.app.dto.response.ApiResponse;
+import com.expenseapp.app.dto.response.AppResponse;
 import com.expenseapp.app.util.JwtUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -18,14 +18,14 @@ public class AuthController {
 
     // Temporary dev endpoint - remove in production
     @GetMapping("/test-token")
-    public ResponseEntity<ApiResponse<String>> getTestToken() {
+    public ResponseEntity<AppResponse<String>> getTestToken() {
         String testEmail = "freshmailer36@gmail.com";
         String token = jwtUtils.generateToken(testEmail);
         Thread t = Thread.currentThread();
 //        System.out.println("Thread: " + t);
 //        System.out.println("Is virtual: " + t.isVirtual());
 
-        ApiResponse<String> response = ApiResponse.<String>builder()
+        AppResponse<String> response = AppResponse.<String>builder()
                 .statusCode(HttpStatus.OK.value())
                 .success(true)
                 .message("Test JWT issued for development")

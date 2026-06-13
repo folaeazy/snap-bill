@@ -1,21 +1,17 @@
 package com.expenseapp.app.service;
 
 import com.domain.entities.TransactionEntity;
-import com.domain.entities.User;
 import com.domain.repositories.TransactionRepository;
 import com.expenseapp.app.dto.expense.request.CreateExpenseRequest;
 import com.domain.model.ExpenseRequestQuery;
 import com.expenseapp.app.dto.expense.request.UpdateExpenseRequest;
 import com.expenseapp.app.dto.expense.response.ExpenseResponse;
 import com.domain.model.PagedResponse;
-import com.expenseapp.app.dto.response.ApiResponse;
+import com.expenseapp.app.dto.response.AppResponse;
 import com.expenseapp.app.interfaces.ExpenseService;
 import com.expenseapp.app.mapper.TransactionMapper;
-import com.expenseapp.app.security.AuthenticatedUser;
 import lombok.RequiredArgsConstructor;
 import org.jetbrains.annotations.NotNull;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -85,7 +81,7 @@ public class ExpenseServiceImpl implements ExpenseService {
      * @return
      */
     @Override
-    public ApiResponse<ExpenseResponse> getExpense(UUID expenseId) {
+    public AppResponse<ExpenseResponse> getExpense(UUID expenseId) {
         return null;
     }
 

@@ -1,20 +1,17 @@
 package com.expenseapp.app.controller;
 
-import com.domain.entities.User;
 import com.expenseapp.app.dto.expense.request.CreateExpenseRequest;
 import com.domain.model.ExpenseRequestQuery;
 import com.expenseapp.app.dto.expense.request.UpdateExpenseRequest;
 import com.expenseapp.app.dto.expense.response.ExpenseResponse;
 import com.domain.model.PagedResponse;
-import com.expenseapp.app.dto.response.ApiResponse;
+import com.expenseapp.app.dto.response.AppResponse;
 import com.expenseapp.app.interfaces.ExpenseService;
-import com.expenseapp.app.security.AuthenticatedUser;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.Instant;
@@ -23,13 +20,14 @@ import java.util.UUID;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/expense")
+@Tag(name = " Expense", description = "Expense APIs")
 public class ExpenseController {
 
     private final ExpenseService expenseService;
     private final CurrentUser currentUser;
 
     @GetMapping("/")
-    public ResponseEntity<ApiResponse<PagedResponse<ExpenseResponse>>> getExpenses(@Valid @ModelAttribute ExpenseRequestQuery requestQuery) {
+    public ResponseEntity<AppResponse<PagedResponse<ExpenseResponse>>> getExpenses(@Valid @ModelAttribute ExpenseRequestQuery requestQuery) {
         UUID userId =  currentUser.getCurrentUser().getId();
         var result =  expenseService.getExpenses(requestQuery, userId);
         PagedResponse<ExpenseResponse> pagedResponse = new PagedResponse<>(
@@ -41,7 +39,7 @@ public class ExpenseController {
                 result.last()
         );
 
-        ApiResponse<PagedResponse<ExpenseResponse>> response = ApiResponse.<PagedResponse<ExpenseResponse>>builder()
+        AppResponse<PagedResponse<ExpenseResponse>> response = AppResponse.<PagedResponse<ExpenseResponse>>builder()
                 .success(true)
                 .timestamp(Instant.now())
                 .message("Expenses retrieved successfully")
@@ -55,11 +53,11 @@ public class ExpenseController {
 
     //  CREATE  A MANUAL EXPENSE
     @PostMapping("/manual")
-    public ResponseEntity<ApiResponse<ExpenseResponse>> createExpense(
+    public ResponseEntity<AppResponse<ExpenseResponse>> createExpense(
             @RequestBody CreateExpenseRequest request
     ) {
         expenseService.createManualExpense(request);
-        ApiResponse<ExpenseResponse> response = ApiResponse.<ExpenseResponse>builder()
+        AppResponse<ExpenseResponse> response = AppResponse.<ExpenseResponse>builder()
                 .success(true)
                 .timestamp(Instant.now())
                 .message("Expense created successfully")
@@ -70,13 +68,13 @@ public class ExpenseController {
 
     //  UPDATE AN EXPENSE
     @PutMapping("/{id}")
-    public  ResponseEntity<ApiResponse<ExpenseResponse>> updateExpense(
+    public  ResponseEntity<AppResponse<ExpenseResponse>> updateExpense(
             @PathVariable UUID id,
             @RequestBody UpdateExpenseRequest request
     ) {
 
         expenseService.updateExpense(id, request);
-        ApiResponse<ExpenseResponse> response = ApiResponse.<ExpenseResponse>builder()
+        AppResponse<ExpenseResponse> response = AppResponse.<ExpenseResponse>builder()
                 .success(true)
                 .timestamp(Instant.now())
                 .message("Expense updated successfully")
@@ -88,10 +86,10 @@ public class ExpenseController {
 
     //  DELETE AN EXPENSE
     @DeleteMapping("/{id}")
-    public ResponseEntity<ApiResponse<Void>> deleteExpense(@PathVariable UUID id){
+    public ResponseEntity<AppResponse<Void>> deleteExpense(@PathVariable UUID id){
 
         expenseService.deleteExpense(id);
-        ApiResponse<Void> response = ApiResponse.<Void>builder()
+        AppResponse<Void> response = AppResponse.<Void>builder()
             .success(true)
             .timestamp(Instant.now())
             .message("Expense deleted successfully")

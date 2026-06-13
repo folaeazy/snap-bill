@@ -21,7 +21,12 @@ snapbill :
       id : ${GOOGLE_ID}
       secret : ${GOOGLE_SECRET}
 
-
+springdoc:
+  api-docs:
+    enabled: true
+  swagger-ui:
+    enabled: true
+  packages-to-scan: com.expenseapp.app.controller
 
 spring:
   application:

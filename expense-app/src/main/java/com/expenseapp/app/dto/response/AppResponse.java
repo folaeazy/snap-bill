@@ -2,16 +2,17 @@ package com.expenseapp.app.dto.response;
 
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 import lombok.Data;
 
 import java.time.Instant;
-import java.time.LocalDateTime;
 
 @Data
 @Builder
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class ApiResponse<T> {
+@Schema(hidden = true)
+public class AppResponse<T> {
 
     private int statusCode;
 

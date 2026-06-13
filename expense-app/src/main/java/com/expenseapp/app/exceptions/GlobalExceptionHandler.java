@@ -1,7 +1,7 @@
 package com.expenseapp.app.exceptions;
 
 
-import com.expenseapp.app.dto.response.ApiResponse;
+import com.expenseapp.app.dto.response.AppResponse;
 import com.domain.exceptions.DomainValidationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -15,8 +15,8 @@ import java.time.Instant;
 public class GlobalExceptionHandler {
 
     @ExceptionHandler(DomainValidationException.class)
-    public ResponseEntity<ApiResponse<Void>> handleDomainException(DomainValidationException ex, WebRequest req) {
-        ApiResponse<Void> response = ApiResponse.<Void>builder()
+    public ResponseEntity<AppResponse<Void>> handleDomainException(DomainValidationException ex, WebRequest req) {
+        AppResponse<Void> response = AppResponse.<Void>builder()
                 .statusCode(HttpStatus.BAD_REQUEST.value())
                 .success(false)
                 .message(ex.getMessage())
@@ -30,11 +30,11 @@ public class GlobalExceptionHandler {
 
     // Catch-all for unexpected errors
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<ApiResponse<Void>> handleGlobalException(
+    public ResponseEntity<AppResponse<Void>> handleGlobalException(
             Exception ex,
             WebRequest request) {
 
-        ApiResponse<Void> response = ApiResponse.<Void>builder()
+        AppResponse<Void> response = AppResponse.<Void>builder()
                 .statusCode(HttpStatus.INTERNAL_SERVER_ERROR.value())
                 .success(false)
                 .message("An unexpected error occurred")

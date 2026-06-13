@@ -5,6 +5,7 @@ import lombok.Builder;
 import java.math.BigDecimal;
 
 @Builder
+
 public record SummaryCards(
         BigDecimal totalSpent,
         double  monthlyChangePercentage,

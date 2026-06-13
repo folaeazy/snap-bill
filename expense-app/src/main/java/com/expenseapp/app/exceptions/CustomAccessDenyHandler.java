@@ -1,6 +1,6 @@
 package com.expenseapp.app.exceptions;
 
-import com.expenseapp.app.dto.response.ApiResponse;
+import com.expenseapp.app.dto.response.AppResponse;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -23,7 +23,7 @@ public class CustomAccessDenyHandler implements AccessDeniedHandler {
     public void handle(HttpServletRequest request, HttpServletResponse response, AccessDeniedException accessDeniedException)
             throws IOException, ServletException {
 
-        ApiResponse<Void> errorResponse = ApiResponse.<Void>builder()
+        AppResponse<Void> errorResponse = AppResponse.<Void>builder()
                 .statusCode(HttpStatus.FORBIDDEN.value())
                 .message(accessDeniedException.getMessage())
                 .build();

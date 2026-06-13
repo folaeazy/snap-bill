@@ -5,7 +5,7 @@ import com.domain.model.ExpenseRequestQuery;
 import com.expenseapp.app.dto.expense.request.UpdateExpenseRequest;
 import com.expenseapp.app.dto.expense.response.ExpenseResponse;
 import com.domain.model.PagedResponse;
-import com.expenseapp.app.dto.response.ApiResponse;
+import com.expenseapp.app.dto.response.AppResponse;
 import java.util.UUID;
 
 public interface ExpenseService {
@@ -16,5 +16,5 @@ public interface ExpenseService {
     Void deleteExpense(UUID expenseId);
 
     //TODO : future implementation
-    ApiResponse<ExpenseResponse> getExpense(UUID expenseId);
+    AppResponse<ExpenseResponse> getExpense(UUID expenseId);
 }
