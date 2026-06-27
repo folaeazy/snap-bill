@@ -55,6 +55,10 @@ public class RawEmailRepositoryImpl implements RawEmailRepository {
         return jpaRep.findByClaimToken(token);
     }
 
+    /**
+     * Query picks up Email with status Pending and ones stuck in Processing state
+     * per account , limit and max retry
+     */
     @Override
     public List<UUID> findIdsForClaim(UUID accountId, Instant timeout, Instant now, int maxRetry, int limit) {
         return jpaRep.findIdsForClaimInternal(

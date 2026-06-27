@@ -75,6 +75,8 @@ public class GmailEmailGatewayImpl  implements EmailGateway {
                     : Optional.ofNullable(account.getLastEmailReceivedAt())
                     .orElse(Instant.now().minus(30, ChronoUnit.DAYS));
 
+            //TODO : test if multiple thread does fetch same email Id twice
+            // I guess this is still a single-threaded execution
             List<String> messageIds = fetchMessageIds(gmail, fetchSince);
             if(messageIds.isEmpty()) {
                 log.info("No new Gmail message  for account {} is empty", account.getProviderEmail());
@@ -82,6 +84,7 @@ public class GmailEmailGatewayImpl  implements EmailGateway {
             }
 
             // Fetch email meta-data concurrently
+            // TODO : Go for check on method
             List<EmailMessageDto> metaData = fetchMetadataInBatches(gmail, account, messageIds);
 
 
@@ -103,7 +106,9 @@ public class GmailEmailGatewayImpl  implements EmailGateway {
 
     /**
      *  GMAIL  METADATA
-     * Fetches gmail meta-data in batches
+     * Fetches gmail meta-data in batches of 20
+     * To Check :: If SynchronizedList is actually doing the job of disabling
+     * Metadata double fetch by different thread
      */
 
     private List<EmailMessageDto> fetchMetadataInBatches(Gmail gmail, EmailAccount account, List<String> messageIds) throws GeneralSecurityException, IOException {
@@ -212,6 +217,10 @@ public class GmailEmailGatewayImpl  implements EmailGateway {
         String query = "after:" + sinceInSeconds + " category:primary";
         String pageToken =  null;
 
+        /**
+         * To check : Is this do while loop actually fetching only ID at first
+         * or fetching the whole messages then picking Ids only
+         */
         do {
 
             ListMessagesResponse response = gmail.users()

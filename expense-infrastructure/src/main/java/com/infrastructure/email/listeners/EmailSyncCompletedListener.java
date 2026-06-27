@@ -27,7 +27,7 @@ public class EmailSyncCompletedListener {
     @EventListener
     public void handle(EmailSyncCompleted event) {
         log.info("Received email sync completed, checking to proceed....");
-        if(event.newEmailCount()> 0) {
+        if(event.newEmailCount() > 0) {
             log.info("proceeding to syncing ........");
             pipelineExecutor.execute(()-> {
                 try {

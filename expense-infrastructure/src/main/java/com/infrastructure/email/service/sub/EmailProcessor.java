@@ -15,6 +15,10 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
 
+/**
+ * LLM cannot process single email twice
+ * Messages already flagged with PROCESSED cannot be processed twice
+ */
 @Service
 @RequiredArgsConstructor
 @Slf4j

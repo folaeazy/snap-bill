@@ -35,7 +35,8 @@ public class EmailProcessingService {
     }
 
     /**
-     * Method called by listener
+     * Method called by Email Completed Event publisher
+     * Process Pending || Processing  Emails Only
      */
     public void processPendingEmailsForAccounts(UUID accountId) {
         Instant now = Instant.now();
@@ -44,7 +45,7 @@ public class EmailProcessingService {
 
         UUID token = UUID.randomUUID();
 
-        //Get Ids
+        //Get Ids to claim in batches
         List<UUID> ids = rawEmailRepository.findIdsForClaim(accountId,timeout,now,maxRetry,BATCH_SIZE);
 
 

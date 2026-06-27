@@ -2,10 +2,8 @@ package com.infrastructure.email.listeners;
 
 import com.domain.entities.PipelineFailure;
 import com.domain.events.EmailProcessingRequested;
-import com.domain.events.EmailSyncRequested;
 import com.domain.repositories.PipelineFailureRepository;
 import com.infrastructure.email.service.EmailProcessingService;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.event.EventListener;
@@ -14,7 +12,7 @@ import org.springframework.stereotype.Component;
 import java.time.Instant;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
+
 
 @Component
 @Slf4j
