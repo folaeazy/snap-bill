@@ -75,8 +75,6 @@ public class GmailEmailGatewayImpl  implements EmailGateway {
                     : Optional.ofNullable(account.getLastEmailReceivedAt())
                     .orElse(Instant.now().minus(30, ChronoUnit.DAYS));
 
-            //TODO : test if multiple thread does fetch same email Id twice
-            // I guess this is still a single-threaded execution
             List<String> messageIds = fetchMessageIds(gmail, fetchSince);
             if(messageIds.isEmpty()) {
                 log.info("No new Gmail message  for account {} is empty", account.getProviderEmail());
@@ -210,6 +208,15 @@ public class GmailEmailGatewayImpl  implements EmailGateway {
                 .build();
     }
 
+
+    /**
+     *
+     * Fetch Per Account email Ids first
+     *
+     * @param gmail executor candidate
+     * @param fetchSince last sync param
+     * @return List of gmail message ids
+     */
     private List<String> fetchMessageIds(Gmail gmail, Instant fetchSince) throws IOException {
         List<String> ids =  new ArrayList<>();
         long sinceInSeconds = fetchSince.getEpochSecond();
@@ -217,10 +224,7 @@ public class GmailEmailGatewayImpl  implements EmailGateway {
         String query = "after:" + sinceInSeconds + " category:primary";
         String pageToken =  null;
 
-        /**
-         * To check : Is this do while loop actually fetching only ID at first
-         * or fetching the whole messages then picking Ids only
-         */
+
         do {
 
             ListMessagesResponse response = gmail.users()
@@ -232,9 +236,7 @@ public class GmailEmailGatewayImpl  implements EmailGateway {
                     .execute();
 
             if(response.getMessages() != null) {
-                for(Message message : response.getMessages()) {
-                    ids.add(message.getId());
-                }
+                response.getMessages().forEach(m -> ids.add(m.getId()));
             }
             pageToken = response.getNextPageToken();
         }while (pageToken != null);
@@ -245,6 +247,10 @@ public class GmailEmailGatewayImpl  implements EmailGateway {
     }
 
 
+    /**
+     *
+     * TODO: Intent Idempotent - if two thread is actually not processing same email candidate twice
+     */
     private List<RawEmailMessage> fetchFullMessagesInBatches(Gmail gmail, List<EmailMessageDto> candidates, EmailAccount account) {
         if(candidates.isEmpty()) return List.of();
         List<RawEmailMessage> results = Collections.synchronizedList(new ArrayList<>());

@@ -4,6 +4,7 @@ import com.domain.entities.EmailAccount;
 import com.domain.enums.ConnectionStatus;
 import com.domain.repositories.EmailAccountRepository;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
@@ -26,5 +27,23 @@ interface EmailAccountJpaRepository extends JpaRepository<EmailAccount, UUID>, E
     ORDER BY e.lastSyncAt ASC
     """)
     List<EmailAccount> findAccountsToSync(@Param("status") ConnectionStatus status,@Param("threshold") Instant threshold);
+
+
+    @Modifying
+    @Query("""
+        UPDATE EmailAccount a
+        SET a.syncStatus = 'SYNCING'
+        WHERE a.id = :accountId
+          AND a.syncStatus = 'IDLE'
+    """)
+    int tryClaimForSync(@Param("accountId") UUID accountId);
+
+    @Modifying
+    @Query("""
+        UPDATE EmailAccount a
+        SET a.syncStatus = 'IDLE'
+        WHERE a.id = :accountId
+    """)
+    void releaseSyncLock(@Param("accountId") UUID accountId);
 
 }

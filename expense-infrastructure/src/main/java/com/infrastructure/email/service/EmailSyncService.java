@@ -9,6 +9,7 @@ import com.domain.repositories.RawEmailRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
 import java.util.List;
@@ -31,12 +32,13 @@ public class EmailSyncService {
 
 
     /**
-     * Sync one email account (called by scheduler or manual trigger).
+     * Sync one email account (called by scheduler or manual trigger) per time.
      *
      * @param account The connected email account to sync
      * @return Number of new expenses successfully processed and saved
      */
 
+    @Transactional
     public int syncAccount(EmailAccount account) {
         String provider = account.getProvider().toString().toLowerCase();
         String gatewayKey = provider + "EmailGateway";
@@ -47,12 +49,19 @@ public class EmailSyncService {
             return 0;
         }
 
-        // Determine starting point for fetch
-        Instant since = account.getLastSyncAt();
+        int claimed = emailAccountRepository.tryClaimForSync(account.getId());
+        if (claimed == 0) {
+            log.info("Account {} is already syncing, skipping", account.getProviderEmail());
+            return 0;
+        }
 
-        log.info("First sync for {} - fetching from {}", account.getProviderEmail(), since);
 
         try {
+
+            // Determine starting point for fetch
+            Instant since = account.getLastEmailReceivedAt();
+
+            log.info("First sync for {} - fetching from {}", account.getProviderEmail(), since);
             // Fetch new messages since last sync
             List<RawEmailMessage> messages = gateway.fetchNewMessages(account, since);
             if(messages.isEmpty()){
@@ -79,6 +88,9 @@ public class EmailSyncService {
         }catch (Exception e) {
             log.error("Sync failed for {}: {}", account.getProviderEmail(), e.getMessage(), e);
             return 0;
+        }finally {
+            //release lock
+            emailAccountRepository.releaseSyncLock(account.getId());
         }
     }
 

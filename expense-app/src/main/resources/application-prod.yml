@@ -45,7 +45,7 @@ spring:
 
   jpa:
     hibernate:
-      ddl-auto: validate          # Use Flyway for schema, not auto-DDL
+      ddl-auto: create          # Use Flyway for schema, not auto-DDL
     show-sql: false
     properties:
       hibernate:

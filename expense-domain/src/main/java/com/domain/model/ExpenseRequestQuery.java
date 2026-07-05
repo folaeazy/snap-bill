@@ -9,7 +9,7 @@ import java.util.UUID;
 
 @Builder
 public record ExpenseRequestQuery(
-        //UUID userId ,
+        UUID userId ,
 
         List<UUID> emailAccountIds,
 

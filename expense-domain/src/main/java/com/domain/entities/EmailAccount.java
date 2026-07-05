@@ -3,6 +3,7 @@ package com.domain.entities;
 
 import com.domain.enums.ConnectionStatus;
 import com.domain.enums.EmailProvider;
+import com.domain.enums.SyncStatus;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -54,6 +55,10 @@ public class EmailAccount {
 
     @Column
     private Instant expiresAt;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "sync_status", nullable = false)
+    private SyncStatus syncStatus = SyncStatus.IDLE;
 
    // status or error tracking
     @Enumerated(EnumType.STRING)
