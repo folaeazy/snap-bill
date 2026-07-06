@@ -28,35 +28,36 @@ public class EmailSyncService {
     private final Map<String, EmailGateway> emailGateways;
     private final RawEmailRepository rawEmailRepository;
     private final EmailAccountRepository emailAccountRepository;
+    private final SyncLockService syncLockService;
+    private final SyncPersistentService syncPersistentService;
 
 
 
     /**
      * Sync one email account (called by scheduler or manual trigger) per time.
      *
+     * Method spans a slow Api external call - must never hold a DB transaction open that long time
      * @param account The connected email account to sync
      * @return Number of new expenses successfully processed and saved
      */
 
-    @Transactional
     public int syncAccount(EmailAccount account) {
-        String provider = account.getProvider().toString().toLowerCase();
-        String gatewayKey = provider + "EmailGateway";
-
-        EmailGateway gateway = emailGateways.get(gatewayKey);
-        if (gateway == null) {
-            log.error("No EmailGateway found for provider: {}", provider);
-            return 0;
-        }
-
-        int claimed = emailAccountRepository.tryClaimForSync(account.getId());
-        if (claimed == 0) {
+        boolean claimed = syncLockService.tryClaim(account.getId());
+        if (!claimed) {
             log.info("Account {} is already syncing, skipping", account.getProviderEmail());
             return 0;
         }
 
-
         try {
+
+            String provider = account.getProvider().toString().toLowerCase();
+            String gatewayKey = provider + "EmailGateway";
+
+            EmailGateway gateway = emailGateways.get(gatewayKey);
+            if (gateway == null) {
+                log.error("No EmailGateway found for provider: {}", provider);
+                return 0;
+            }
 
             // Determine starting point for fetch
             Instant since = account.getLastEmailReceivedAt();
@@ -69,20 +70,8 @@ public class EmailSyncService {
                 return 0;
             }
 
-
-            //save raw emails for processing
-            rawEmailRepository.saveAllMessages(messages);
-
-
-            Instant newestEmail = messages.stream()
-                    .map(RawEmailMessage::getReceivedDate)
-                    .max(Instant::compareTo)
-                    .orElse(Instant.now());
-
-            account.setLastEmailReceivedAt(newestEmail);
-
-            emailAccountRepository.save(account);
-            log.info("Updated lastSyncAt for {} to {}", account.getProviderEmail(), account.getLastSyncAt());
+            //persist result its own transaction
+            syncPersistentService.persistSyncResults(account,messages);
             return messages.size();
 
         }catch (Exception e) {
@@ -110,4 +99,6 @@ public class EmailSyncService {
 
         return syncAccount(account);
     }
+
+
 }
