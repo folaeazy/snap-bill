@@ -104,9 +104,7 @@ public class GmailEmailGatewayImpl  implements EmailGateway {
 
     /**
      *  GMAIL  METADATA
-     * Fetches gmail meta-data in batches of 20
-     * To Check :: If SynchronizedList is actually doing the job of disabling
-     * Metadata double fetch by different thread
+     *
      */
 
     private List<EmailMessageDto> fetchMetadataInBatches(Gmail gmail, EmailAccount account, List<String> messageIds) throws GeneralSecurityException, IOException {
@@ -115,9 +113,9 @@ public class GmailEmailGatewayImpl  implements EmailGateway {
         List<EmailMessageDto> results = Collections.synchronizedList(new ArrayList<>());
         Semaphore semaphore = new Semaphore(MAX_CONCURRENT_CALL);
         AtomicInteger i = new AtomicInteger(0);
-        for (List<String> batch : partition(messageIds, BATCH_SIZE)) {
-            List<CompletableFuture<Void>> futures = batch.stream()
-                    .map(id -> CompletableFuture.runAsync(() -> {
+        List<CompletableFuture<Void>> futures = messageIds.stream()
+                .distinct()
+                .map(id -> CompletableFuture.runAsync(() -> {
                         try {
                             semaphore.acquire();
                             Message msg = retry(()->
@@ -131,7 +129,10 @@ public class GmailEmailGatewayImpl  implements EmailGateway {
                             }
 
 
-                        } catch (Exception e) {
+                        } catch (InterruptedException e) {
+                            Thread.currentThread().interrupt();
+                        }
+                        catch (Exception e) {
                             log.error("Metadata fetch failed for id {}", id, e);
                         } finally {
                             semaphore.release();
@@ -141,7 +142,6 @@ public class GmailEmailGatewayImpl  implements EmailGateway {
                     .toList();
             CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).join();
 
-        }
         return results;
 
     }
@@ -248,16 +248,16 @@ public class GmailEmailGatewayImpl  implements EmailGateway {
 
 
     /**
-     *
-     * TODO: Intent Idempotent - if two thread is actually not processing same email candidate twice
+     * Fetches full Gmail messages concurrently, throttled by MAX_CONCURRENT_CALL permits.
+     * Each candidate maps to exactly one dedicated future — no shared work queue,
+     * so no two threads can ever process the same candidate (duplication can only
+     * happen if `candidates` itself contains the same id twice upstream).
      */
     private List<RawEmailMessage> fetchFullMessagesInBatches(Gmail gmail, List<EmailMessageDto> candidates, EmailAccount account) {
         if(candidates.isEmpty()) return List.of();
-        List<RawEmailMessage> results = Collections.synchronizedList(new ArrayList<>());
         Semaphore semaphore = new Semaphore(MAX_CONCURRENT_CALL);
 
-         for(List<EmailMessageDto> batch : partition(candidates, BATCH_SIZE)) {
-             List<CompletableFuture<RawEmailMessage>> futures = batch.stream()
+        List<CompletableFuture<RawEmailMessage>> futures = candidates.stream()
                      .map(candidate -> CompletableFuture.supplyAsync(() -> {
                          try {
                              semaphore.acquire();
@@ -272,6 +272,9 @@ public class GmailEmailGatewayImpl  implements EmailGateway {
 
                             return convertToRawEmail(account,fullMessage);
 
+                         }catch (InterruptedException e) {
+                             Thread.currentThread().interrupt();
+                             return null;
                          }catch (Exception e) {
                              log.error("Full message fetch failed for {}", candidate.getId(), e);
                              return null;
@@ -282,15 +285,12 @@ public class GmailEmailGatewayImpl  implements EmailGateway {
                      }, pipelineExecutor))
                      .toList();
 
-             List<RawEmailMessage> batchResults = futures.stream()
+              return futures.stream()
                      .map(CompletableFuture::join)
+                      .filter(Objects::nonNull)
                      .toList();
 
-             results.addAll(batchResults);
 
-         }
-
-            return results;
 
     }
 

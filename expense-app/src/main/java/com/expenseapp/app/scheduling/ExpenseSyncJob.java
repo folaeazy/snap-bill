@@ -48,7 +48,7 @@ public class ExpenseSyncJob {
     /**
      * Scheduler that triggers to whole processing pipeline.
      */
-   // @Scheduled(cron = "${snapbill.sync.cron}")
+    @Scheduled(cron = "${snapbill.sync.cron}")
     public void run() {
         log.info("Starting ExpenseSyncJob at {}", Instant.now());
 
