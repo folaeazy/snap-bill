@@ -18,6 +18,7 @@ import org.springframework.stereotype.Component;
 import java.time.Instant;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 
 @Component
@@ -31,6 +32,10 @@ public class EmailSyncListener {
     private final ExecutorService pipelineExecutor;
     private final ScheduledExecutorService retryExecutor;
     private final PipelineFailureRepository pipelineFailureRepository;
+
+    private static final int ACCOUNT_LIMIT = 5;
+
+    private final Semaphore accountSemaphore = new Semaphore(ACCOUNT_LIMIT);
 
     public EmailSyncListener(EmailSyncService emailSyncService,
                              ApplicationEventPublisher publisher,
@@ -51,6 +56,7 @@ public class EmailSyncListener {
     public void handle(EmailSyncRequested event) {
         pipelineExecutor.execute(() -> {
             try {
+                accountSemaphore.acquire();   // <-- Layer 1: throttles ACCOUNTS syncing concurrently
                 log.info("Email sync request event publish received ......");
                 log.info("Starting now...............................");
                EmailAccount account = emailAccountRepository.findById(event.accountId())
@@ -83,6 +89,8 @@ public class EmailSyncListener {
                     });
                 }, 30, TimeUnit.SECONDS);
 
+            }finally {
+                accountSemaphore.release();
             }
         });
 

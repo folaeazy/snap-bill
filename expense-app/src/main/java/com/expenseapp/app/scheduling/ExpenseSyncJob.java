@@ -24,9 +24,7 @@ public class ExpenseSyncJob {
     private final EmailAccountRepository emailAccountRepository;
     private final ApplicationEventPublisher publisher;
     private final ExecutorService pipelineExecutor;
-    private static final int ACCOUNT_LIMIT = 50;
 
-    private final Semaphore accountSemaphore = new Semaphore(ACCOUNT_LIMIT);
 
 
     // Threshold in seconds: accounts synced within this time are skipped
@@ -60,7 +58,7 @@ public class ExpenseSyncJob {
             List<EmailAccount> accounts = emailAccountRepository.findAccountsToSync(ConnectionStatus.ACTIVE, threshold);
 
             if(accounts.isEmpty()) {
-                log.error("No active accounts need syncing right now.");
+                log.info("No active accounts need syncing right now.");
                 return;
             }
 
@@ -74,12 +72,9 @@ public class ExpenseSyncJob {
                 // Async fire-and-forget publishing
                 pipelineExecutor.execute(() -> {
                     try {
-                        accountSemaphore.acquire();
                         publisher.publishEvent(new EmailSyncRequested(account.getId()));
                     } catch (Exception e) {
                         log.error("Failed to publish EmailSyncRequested for account {}", account.getId(), e);
-                    }finally {
-                        accountSemaphore.release();
                     }
                 });
 
