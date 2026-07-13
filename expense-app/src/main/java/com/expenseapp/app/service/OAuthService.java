@@ -5,10 +5,12 @@ import com.domain.entities.User;
 import com.domain.enums.AuthProvider;
 import com.domain.enums.ConnectionStatus;
 import com.domain.enums.EmailProvider;
+import com.domain.enums.SyncStatus;
 import com.domain.repositories.EmailAccountRepository;
 import com.domain.repositories.UserRepository;
 import com.expenseapp.app.dto.OAuthResult;
 import com.domain.events.EmailSyncRequested;
+import com.expenseapp.app.exceptions.MaxAccountReachException;
 import com.infrastructure.security.EncryptionService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationEventPublisher;
@@ -136,7 +138,6 @@ public class OAuthService {
         if(existing.isPresent() && existing.get().getRefreshToken() != null){
             existingRefreshToken = existing.get().getRefreshToken();
         }
-        EmailAccount account;
 
         String accessToken = tokenEncryptionService.encrypt(client.getAccessToken().getTokenValue());
         String refreshToken = client.getRefreshToken() != null
@@ -148,22 +149,31 @@ public class OAuthService {
 
 
         if (existing.isPresent()) {
-            account = existing.get();
-            account.setAccessToken(accessToken);
-            account.setRefreshToken(refreshToken);
-            account.setExpiresAt(expiresAt);
-        } else {
-            account = new EmailAccount();
-            account.setUser(user);
-            account.setProvider(EmailProvider.valueOf(provider));
-            account.setProviderEmail(email);
-            account.setAccessToken(accessToken);
-            account.setRefreshToken(refreshToken);
-            account.setExpiresAt(expiresAt);
-            account.setConnectedAt(Instant.now());
-            account.setStatus(ConnectionStatus.ACTIVE);
 
+            EmailAccount account = existing.get();
+            account.setAccessToken(accessToken);
+            account.setRefreshToken(refreshToken);
+            account.setExpiresAt(expiresAt);
+            return emailAccountRepository.save(account);
         }
+        long activeAccount = emailAccountRepository.countByUserAndStatus(user, ConnectionStatus.ACTIVE);
+        if(activeAccount >= 3) {
+            throw new MaxAccountReachException("Maximum of 3 accounts reached, disconnect one to continue ");
+        }
+        EmailAccount account = new EmailAccount();
+        account.setUser(user);
+        account.setProvider(EmailProvider.valueOf(provider));
+        account.setProviderEmail(email);
+        account.setAccessToken(accessToken);
+        account.setRefreshToken(refreshToken);
+        account.setExpiresAt(expiresAt);
+        account.setConnectedAt(Instant.now());
+        account.setStatus(ConnectionStatus.ACTIVE);
+        account.setSyncStatus(SyncStatus.IDLE);
+        account.setLastSyncAt(null);
+        account.setLastEmailReceivedAt(null);
+
+
        return emailAccountRepository.save(account);
     }
 
