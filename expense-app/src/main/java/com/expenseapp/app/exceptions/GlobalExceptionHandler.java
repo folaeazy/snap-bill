@@ -27,6 +27,17 @@ public class GlobalExceptionHandler {
 
 
     }
+    @ExceptionHandler(MaxAccountReachException.class)
+    public ResponseEntity<AppResponse<Void>> handleMaxAccountException(MaxAccountReachException ex, WebRequest req) {
+        AppResponse<Void> response = AppResponse.<Void>builder()
+                .statusCode(HttpStatus.TOO_MANY_REQUESTS.value())
+                .success(false)
+                .message(ex.getMessage())
+                .timestamp(Instant.now())
+                .path(req.getDescription(false))
+                .build();
+        return new ResponseEntity<>(response,HttpStatus.TOO_MANY_REQUESTS);
+    }
 
     // Catch-all for unexpected errors
     @ExceptionHandler(Exception.class)

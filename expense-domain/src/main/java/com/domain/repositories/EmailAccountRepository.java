@@ -64,4 +64,6 @@ public interface EmailAccountRepository {
     int tryClaimForSync(UUID id);
 
     void releaseSyncLock(UUID id);
+
+    List<EmailAccount> findByUserAndStatus(User user, ConnectionStatus connectionStatus);
 }

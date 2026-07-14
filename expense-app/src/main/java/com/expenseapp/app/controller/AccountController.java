@@ -1,6 +1,8 @@
 package com.expenseapp.app.controller;
 
+import com.domain.entities.User;
 import com.expenseapp.app.dto.accounts.ConnectedAccountsResponse;
+import com.expenseapp.app.dto.report.models.SyncTriggerResponse;
 import com.expenseapp.app.dto.response.AppResponse;
 import com.expenseapp.app.interfaces.AccountService;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -17,6 +19,7 @@ import java.util.UUID;
 @Tag(name = " Accounts", description = "Account APIs")
 public class AccountController {
     private final AccountService accountService;
+    private final CurrentUser currentUser;
 
     @GetMapping()
     public ResponseEntity<AppResponse<ConnectedAccountsResponse>> getAccounts(){
@@ -41,4 +44,18 @@ public class AccountController {
                 .build();
         return ResponseEntity.ok(response);
     }
+
+    @PostMapping("/sync")
+    public ResponseEntity<AppResponse<SyncTriggerResponse>> triggerManualSync() {
+        User user = currentUser.getCurrentUser();
+        accountService.triggerManualSync(user);
+        var response = AppResponse.<SyncTriggerResponse>builder()
+                .statusCode(HttpStatus.ACCEPTED.value())
+                .message("Syncing...")
+                .build();
+        return ResponseEntity.ok(response);
+
+    }
+
+
 }
