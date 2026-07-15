@@ -2,6 +2,7 @@ package com.domain.repositories;
 
 import com.domain.entities.EmailAccount;
 import com.domain.entities.RawEmailMessage;
+import com.domain.enums.ProcessingStatus;
 
 import java.time.Instant;
 import java.util.List;
@@ -45,4 +46,6 @@ public interface RawEmailRepository {
             int limit
 
     );
+
+    boolean existsByAccountIdAndStatus(EmailAccount account, ProcessingStatus processingStatus);
 }

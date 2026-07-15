@@ -65,7 +65,7 @@ public class EmailSyncListener {
                int newEmails = emailSyncService.syncAccount(account);
 
                 //publish to email sync complete
-               publisher.publishEvent(new EmailSyncCompleted(account.getId(), newEmails));
+               publisher.publishEvent(new EmailSyncCompleted(account, newEmails));
 
             }catch (Exception e) {
                 log.error("Sync failed for  account {}", e);

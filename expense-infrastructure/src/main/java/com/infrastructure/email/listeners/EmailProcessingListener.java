@@ -2,16 +2,19 @@ package com.infrastructure.email.listeners;
 
 import com.domain.entities.PipelineFailure;
 import com.domain.events.EmailProcessingRequested;
+import com.domain.events.EmailSyncRequested;
 import com.domain.repositories.PipelineFailureRepository;
 import com.infrastructure.email.service.EmailProcessingService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 
 import java.time.Instant;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 
 @Component
@@ -21,15 +24,18 @@ public class EmailProcessingListener {
     private final EmailProcessingService emailProcessingService;
     private final PipelineFailureRepository pipelineFailureRepository;
     private final ScheduledExecutorService retryExecutor;
+    private final ApplicationEventPublisher publisher;
 
     public EmailProcessingListener(@Qualifier("pipelineExecutor")ExecutorService pipelineExecutor,
                                    EmailProcessingService emailProcessingService,
                                    PipelineFailureRepository pipelineFailureRepository,
-                                   @Qualifier("scheduledExecutor")ScheduledExecutorService retryExecutor) {
+                                   @Qualifier("scheduledExecutor")ScheduledExecutorService retryExecutor,
+                                   ApplicationEventPublisher publisher) {
         this.pipelineExecutor = pipelineExecutor;
         this.emailProcessingService = emailProcessingService;
         this.pipelineFailureRepository = pipelineFailureRepository;
         this.retryExecutor = retryExecutor;
+        this.publisher = publisher;
     }
 
 
@@ -53,12 +59,15 @@ public class EmailProcessingListener {
                                 .build()
 
                 );
-                // retry after delay
-//                retryExecutor.schedule(() -> {
-//                   // TODO
-//
-//                    );
-//                }, 30, TimeUnit.SECONDS);
+                 //retry after delay
+
+                retryExecutor.schedule(() -> {
+                    pipelineExecutor.execute(() -> {
+                        publisher.publishEvent(
+                                new EmailProcessingRequested(event.accountId())
+                        );
+                    });
+                }, 30, TimeUnit.SECONDS);
             }
 
         });

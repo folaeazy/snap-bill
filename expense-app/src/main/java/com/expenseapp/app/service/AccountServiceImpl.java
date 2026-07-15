@@ -43,7 +43,7 @@ public class AccountServiceImpl implements AccountService {
     }
 
     /**
-     * @param user
+     * @param user - authenticated user
      */
     @Override
     public SyncTriggerResponse triggerManualSync(User user) {

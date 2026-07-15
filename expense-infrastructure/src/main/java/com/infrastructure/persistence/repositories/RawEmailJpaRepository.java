@@ -2,6 +2,7 @@ package com.infrastructure.persistence.repositories;
 
 import com.domain.entities.EmailAccount;
 import com.domain.entities.RawEmailMessage;
+import com.domain.enums.ProcessingStatus;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
@@ -67,4 +68,6 @@ interface RawEmailJpaRepository extends JpaRepository<RawEmailMessage, UUID> {
     List<RawEmailMessage> findByEmailAccount(EmailAccount emailAccount);
 
     void deleteByEmailAccount(EmailAccount emailAccount);
+
+    boolean existsByEmailAccountAndProcessed(EmailAccount account, ProcessingStatus status);
 }

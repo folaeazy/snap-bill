@@ -2,6 +2,7 @@ package com.infrastructure.persistence.repositories;
 
 import com.domain.entities.EmailAccount;
 import com.domain.entities.RawEmailMessage;
+import com.domain.enums.ProcessingStatus;
 import com.domain.repositories.RawEmailRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
@@ -68,5 +69,11 @@ public class RawEmailRepositoryImpl implements RawEmailRepository {
                 maxRetry,
                 PageRequest.of(0, limit)
         );
+    }
+
+
+    @Override
+    public boolean existsByAccountIdAndStatus(EmailAccount account, ProcessingStatus processingStatus) {
+        return jpaRep.existsByEmailAccountAndProcessed(account, processingStatus);
     }
 }
